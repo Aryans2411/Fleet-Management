@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Navigation from "./dashboard";
-import { barChartDataDailyTraffic } from "./line_chart";
-import { barChartOptionsDailyTraffic } from "./line_chart";
+
+import Navigation from "../Components/dashboard/navigation";
 
 export default function Home() {
   const [dashboardData, setDashboardData] = useState({
@@ -22,9 +21,9 @@ export default function Home() {
   }, []);
 
   return (
-    <div className=" ">
+    <div className="bg-black max-h-screen">
       <Navigation />
-      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-b">
+      <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ">
         {/* Dashboard Cards */}
         <div className="card">
           <div className="p-4 bg-gray-800 text-white rounded-md shadow-md hover:bg-gray-700 cursor-pointer">

@@ -1,18 +1,26 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Example from "./dashboard.js";
-import Vehicle from "./vehicle.js";
-import Driver from "./driver.js";
-import Analytics from "./analytics.js";
-import Home from "./home.js";
+
+import Vehicle from "./Page/vehicle.jsx";
+
+import Driver from "./Page/driver.jsx";
+
+import Analytics from "./Page/analytics.jsx";
+
+import Home from "./Page/home.jsx";
+import LandingPage from "./Page/landing.jsx";
+import Login from "./Components/Login/Login.jsx";
+import Signup from "./Components/Signup/Signup.jsx";
 
 function App() {
   return (
     <div className=" ">
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/home" element={<Home />} />
           <Route path="/vehicle" element={<Vehicle />} />
           {/* Add routes for other pages as needed */}
           <Route path="/driver" element={<Driver />} />

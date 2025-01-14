@@ -24,7 +24,7 @@ CREATE TABLE Vehicles (
 -- 3. Drivers Table
 CREATE TABLE Drivers (
     driverid SERIAL PRIMARY KEY,
-    userid INT NOT NULL, -- Foreign key to Users table
+    userid VARCHAR(100) NOT NULL, -- Foreign key to Users table
     name VARCHAR(100) NOT NULL,
     earningperkm NUMERIC(15,2),
     LicenseNumber VARCHAR(50) UNIQUE NOT NULL,
@@ -51,36 +51,4 @@ CREATE TABLE Trips (
     FOREIGN KEY (userid) REFERENCES Users(userid)
 );
 
--- 5. MaintenanceRecords Table
-CREATE TABLE MaintenanceRecords (
-    RecordID SERIAL PRIMARY KEY,
-    VehicleID INT NOT NULL, -- Foreign key to Vehicles table
-    MaintenanceType VARCHAR(100) NOT NULL, -- e.g., Oil Change, Tire Replacement
-    Cost NUMERIC(10,2) NOT NULL,
-    MaintenanceDate DATE NOT NULL,
-    NextDueDate DATE,
-    Remarks TEXT,
-    FOREIGN KEY (VehicleID) REFERENCES Vehicles(VehicleID)
-);
-
--- 6. Alerts/Notifications Table
-CREATE TABLE Alerts (
-    AlertID SERIAL PRIMARY KEY,
-    userid INT NOT NULL, -- Foreign key to Users table
-    Message TEXT NOT NULL,
-    AlertType VARCHAR(20) CHECK (AlertType IN ('Maintenance', 'Trip', 'General')) NOT NULL,
-    IsRead BOOLEAN DEFAULT FALSE,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (userid) REFERENCES Users(userid)
-);
-
--- 7. Fuel Records Table
-CREATE TABLE FuelRecords (
-    FuelID SERIAL PRIMARY KEY,
-    VehicleID INT NOT NULL, -- Foreign key to Vehicles table
-    FuelAdded NUMERIC(10,2) NOT NULL, -- Fuel in liters/gallons
-    Cost NUMERIC(10,2) NOT NULL,
-    DateAdded DATE NOT NULL,
-    Remarks TEXT,
-    FOREIGN KEY (VehicleID) REFERENCES Vehicles(VehicleID)
-);
+ 
