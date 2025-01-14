@@ -46,94 +46,92 @@ export const Signup = () => {
   };
 
   return (
-    <div>
-      <div className="bg-black min-h-screen flex items-center justify-center overflow-hidden relative">
-        <div className="absolute inset-0"></div>
-        <div className="bg-transparent p-6 rounded-lg shadow-md relative z-10 max-w-md w-full">
-          <h2 className="text-2xl font-bold text-center mb-4 text-white">
-            Sign up
-          </h2>
-          {error && <div className="text-red-500 mb-4">{error}</div>}
-          <form onSubmit={handleSubmit} className="signupform">
-            <div className="mb-4">
-              <label htmlFor="name" className="block text-white font-bold mb-1">
-                Name
-              </label>
-              <input
-                className="bg-transparent text-white px-2 py-2 border rounded-lg focus:ring-2 focus:ring-white"
-                type="text"
-                name="name"
-                id="name"
-                placeholder="Name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="email"
-                className="block text-white font-bold mb-1"
-              >
-                Email
-              </label>
-              <input
-                className="bg-transparent text-white px-2 py-2 border rounded-lg focus:ring-2 focus:ring-white"
-                type="email"
-                name="email"
-                id="email"
-                placeholder="Email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-white font-bold mb-1"
-              >
-                Password
-              </label>
-              <input
-                className="bg-transparent text-white px-2 py-2 border rounded-lg focus:ring-2 focus:ring-white"
-                type="password"
-                name="password"
-                id="password"
-                placeholder="Password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                className="block text-white font-medium mb-1"
-                htmlFor="phonenumber"
-              >
-                Phone Number
-              </label>
-              <input
-                className="w-full px-4 py-2 text-white border bg-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-white"
-                type="text"
-                name="phonenumber"
-                id="phonenumber"
-                placeholder="Phone Number"
-                value={formData.phonenumber}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div className="mb-4">
-              <button
-                type="submit"
-                className="text-white border rounded-lg px-2 py-1 mt-2 bg-transparent hover:bg-white hover:text-black transition duration-200"
-              >
-                Register
-              </button>
-            </div>
-          </form>
-        </div>
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex items-center justify-center relative">
+      <div className="absolute inset-0 bg-black opacity-50"></div>
+      <div className="bg-white bg-opacity-10 backdrop-blur-md border border-gray-700 p-8 rounded-lg shadow-lg relative z-10 max-w-md w-full">
+        <h2 className="text-3xl font-extrabold text-center mb-6 text-white">
+          Sign Up
+        </h2>
+        {error && <div className="text-red-500 mb-4 text-center">{error}</div>}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="name" className="block text-white font-medium mb-2">
+              Name
+            </label>
+            <input
+              className="w-full bg-transparent text-white px-4 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              type="text"
+              name="name"
+              id="name"
+              placeholder="Enter your name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-white font-medium mb-2"
+            >
+              Email
+            </label>
+            <input
+              className="w-full bg-transparent text-white px-4 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              type="email"
+              name="email"
+              id="email"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="password"
+              className="block text-white font-medium mb-2"
+            >
+              Password
+            </label>
+            <input
+              className="w-full bg-transparent text-white px-4 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              type="password"
+              name="password"
+              id="password"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label
+              htmlFor="phonenumber"
+              className="block text-white font-medium mb-2"
+            >
+              Phone Number
+            </label>
+            <input
+              className="w-full bg-transparent text-white px-4 py-2 border border-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              type="text"
+              name="phonenumber"
+              id="phonenumber"
+              placeholder="Enter your phone number"
+              value={formData.phonenumber}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              className="px-6 py-2 text-white font-bold bg-blue-500 hover:bg-blue-600 rounded-lg transition-colors duration-300 focus:ring-4 focus:ring-blue-300 focus:outline-none"
+            >
+              Register
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );
