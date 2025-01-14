@@ -1,45 +1,45 @@
 -- 1. Users Table
 CREATE TABLE Users (
-    UserID SERIAL PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    Email VARCHAR(100) UNIQUE NOT NULL,
-    PasswordHash VARCHAR(255) NOT NULL,
-    PhoneNumber VARCHAR(15) NOT NULL
+    userid VARCHAR(100) PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    passwordhash VARCHAR(255) NOT NULL,
+    phonenumber VARCHAR(15) NOT NULL
 );
 
 -- 2. Vehicles Table
 CREATE TABLE Vehicles (
-    VehicleID SERIAL PRIMARY KEY,
-    UserID INT NOT NULL, -- Foreign key to Users table
-    RegistrationNumber VARCHAR(20) UNIQUE NOT NULL,
-    Make VARCHAR(50) NOT NULL, -- e.g., Toyota
-    Model VARCHAR(50) NOT NULL, -- e.g., Camry
-    Year INT NOT NULL, -- Vehicle's manufacturing year
-    gps_location POINT,
-    FuelType VARCHAR(10) CHECK (FuelType IN ('Petrol', 'Diesel', 'Electric', 'Hybrid')) NOT NULL,
-    OdometerReading INT DEFAULT 0,
-    Status VARCHAR(20) CHECK (Status IN ('Active', 'Inactive', 'Under Maintenance')) DEFAULT 'Active',
-    Mileage INT DEFAULT 0,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+    vehicleid SERIAL PRIMARY KEY,
+    userid VARCHAR(100) NOT NULL, -- Foreign key to Users table
+    registrationnumber VARCHAR(20) UNIQUE NOT NULL,
+    make VARCHAR(50) NOT NULL, -- e.g., Toyota
+    latitude NUMERIC(10, 6), -- Assuming precision for latitude
+    longitude NUMERIC(10, 6), -- Assuming precision for longitude
+    fueltype VARCHAR(10) CHECK (fueltype IN ('Petrol', 'Diesel', 'Electric', 'Hybrid')) NOT NULL,
+    idealmileage NUMERIC(15,2),
+    status VARCHAR(20) CHECK (status IN ('Active', 'Inactive', 'Under Maintenance')) DEFAULT 'Active',
+    FOREIGN KEY (userid) REFERENCES Users(userid)
 );
 
 -- 3. Drivers Table
 CREATE TABLE Drivers (
-    DriverID SERIAL PRIMARY KEY,
-    UserID INT NOT NULL, -- Foreign key to Users table
-    Name VARCHAR(100) NOT NULL,
+    driverid SERIAL PRIMARY KEY,
+    userid INT NOT NULL, -- Foreign key to Users table
+    name VARCHAR(100) NOT NULL,
+    earningperkm NUMERIC(15,2),
     LicenseNumber VARCHAR(50) UNIQUE NOT NULL,
     PhoneNumber VARCHAR(15) NOT NULL,
     AssignedVehicleID INT DEFAULT NULL, -- Nullable foreign key to Vehicles table
-    FOREIGN KEY (UserID) REFERENCES Users(UserID),
-    FOREIGN KEY (AssignedVehicleID) REFERENCES Vehicles(VehicleID)
+    FOREIGN KEY (userid) REFERENCES Users(userid),
+    FOREIGN KEY (AssignedVehicleID) REFERENCES Vehicles(vehicleid)
 );
 
 -- 4. Trips Table
 CREATE TABLE Trips (
     TripID SERIAL PRIMARY KEY,
+    userid VARCHAR NOT NULL,
     VehicleID INT NOT NULL, -- Foreign key to Vehicles table
-    DriverID INT NOT NULL, -- Foreign key to Drivers table
+    driverid INT NOT NULL, -- Foreign key to Drivers table
     StartLocation VARCHAR(255) NOT NULL,
     EndLocation VARCHAR(255) NOT NULL,
     StartTime TIMESTAMP NOT NULL,
@@ -47,7 +47,8 @@ CREATE TABLE Trips (
     DistanceTravelled INT DEFAULT 0,
     TripStatus VARCHAR(20) CHECK (TripStatus IN ('Scheduled', 'In Progress', 'Completed', 'Cancelled')) DEFAULT 'Scheduled',
     FOREIGN KEY (VehicleID) REFERENCES Vehicles(VehicleID),
-    FOREIGN KEY (DriverID) REFERENCES Drivers(DriverID)
+    FOREIGN KEY (driverid) REFERENCES Drivers(driverid),
+    FOREIGN KEY (userid) REFERENCES Users(userid)
 );
 
 -- 5. MaintenanceRecords Table
@@ -65,12 +66,12 @@ CREATE TABLE MaintenanceRecords (
 -- 6. Alerts/Notifications Table
 CREATE TABLE Alerts (
     AlertID SERIAL PRIMARY KEY,
-    UserID INT NOT NULL, -- Foreign key to Users table
+    userid INT NOT NULL, -- Foreign key to Users table
     Message TEXT NOT NULL,
     AlertType VARCHAR(20) CHECK (AlertType IN ('Maintenance', 'Trip', 'General')) NOT NULL,
     IsRead BOOLEAN DEFAULT FALSE,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserID) REFERENCES Users(UserID)
+    FOREIGN KEY (userid) REFERENCES Users(userid)
 );
 
 -- 7. Fuel Records Table
