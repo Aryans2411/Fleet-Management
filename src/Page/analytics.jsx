@@ -1,6 +1,7 @@
 import React from "react";
 
 import Navigation from "../Components/dashboard/navigation";
+import Footer from "../Components/Footer/Footer";
 
 export default function Analytics() {
   return (
@@ -8,6 +9,7 @@ export default function Analytics() {
       <Navigation />
 
       <h1>anal</h1>
+      <Footer/>
     </div>
   );
 }

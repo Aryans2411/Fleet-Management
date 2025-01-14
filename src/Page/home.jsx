@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 
 import Navigation from "../Components/dashboard/navigation";
+import Footer from "../Components/Footer/Footer";
 
 export default function Home() {
   const [dashboardData, setDashboardData] = useState({
@@ -21,7 +22,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="bg-black max-h-screen">
+    <div className="bg-black w-screen h-screen">
       <Navigation />
       <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 ">
         {/* Dashboard Cards */}
@@ -68,7 +69,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      <div></div>
+      <Footer/>
     </div>
   );
 }

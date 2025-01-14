@@ -311,6 +311,39 @@ app.post("/api/driver_register", async (req, res) => {
   }
 });
 
+//api for getting all drivers
+app.get("/api/get_all_drivers", async (req,res) => {
+  try {
+    const query = `SELECT * FROM drivers`;
+    const response = await con.query(query);
+    console.log(response)
+    res.json(response.rows)
+  }
+  catch (error) {
+    console.error("Error fetching drivers data", error);
+    res.status(500).json({
+      error:"Error fetching in drivers data"
+    })
+  }
+})
+
+//api for getting all vehicles
+app.get("/api/get_all_vehicles", async (req,res) => {
+  try {
+    const query = `SELECT * FROM vehicles`;
+    const response = await con.query(query);
+    console.log(response)
+    res.json(response.rows)
+  }
+  catch (error) {
+    console.error("Error fetching vehicles data", error);
+    res.status(500).json({
+      error:"Error fetching in vehicles data"
+    })
+  }
+})
+
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
