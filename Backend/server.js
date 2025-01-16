@@ -39,7 +39,7 @@ app.use(
   })
 );
 
-let userid;
+let userid = process.env.userid;
 let emailid;
 // Function to initialize database tables
 async function initializeDatabase() {
@@ -241,20 +241,14 @@ app.post("/api/vehicle_register", async (req, res) => {
 app.post("/api/driver_register", async (req, res) => {
   try {
     // Destructure inputs from the request body
-    const {
-      userid,
-      name,
-      earningperkm,
-      licensenumber,
-      phonenumber,
-      assignedvehicleid,
-    } = req.body;
-
+    const { name, earningperkm, licensenumber, phonenumber } = req.body;
+    console.log(req.body);
+    //console.log(req.body.licensenumber);
+    //console.log(req.body.phonenumber);
     // Validate required fields
-    if (!userid || !name || !licensenumber || !phonenumber) {
+    if (!name || !licensenumber || !phonenumber) {
       return res.status(400).json({
-        error:
-          "Required fields are missing: userid, name, licensenumber, phonenumber",
+        error: "Required fields are missing: name, licensenumber, phonenumber",
       });
     }
 
@@ -275,9 +269,9 @@ app.post("/api/driver_register", async (req, res) => {
     // Insert data into the Drivers table
     const query = `
             INSERT INTO Drivers (
-                userid, name, earningperkm, licensenumber, phonenumber, assignedvehicleid
+              userid, name, earningperkm, LicenseNumber, PhoneNumber  
             )
-            VALUES ($1, $2, $3, $4, $5, $6)
+            VALUES ($1, $2, $3, $4,$5)
             RETURNING driverid;
         `;
 
@@ -287,7 +281,7 @@ app.post("/api/driver_register", async (req, res) => {
       earningperkm,
       licensenumber,
       phonenumber,
-      assignedvehicleid || null, // Set to NULL if not provided
+      // Set to NULL if not provided
     ];
 
     const result = await con.query(query, values);
@@ -312,37 +306,36 @@ app.post("/api/driver_register", async (req, res) => {
 });
 
 //api for getting all drivers
-app.get("/api/get_all_drivers", async (req,res) => {
+app.get("/api/get_all_drivers", async (req, res) => {
   try {
-    const query = `SELECT * FROM drivers`;
-    const response = await con.query(query);
-    console.log(response)
-    res.json(response.rows)
-  }
-  catch (error) {
+    console.log(userid);
+    const query = `SELECT * FROM drivers WHERE userid=$1`;
+
+    const response = await con.query(query, [userid]);
+    console.log(response.rows);
+    res.json(response.rows);
+  } catch (error) {
     console.error("Error fetching drivers data", error);
     res.status(500).json({
-      error:"Error fetching in drivers data"
-    })
+      error: "Error fetching in drivers data",
+    });
   }
-})
+});
 
 //api for getting all vehicles
-app.get("/api/get_all_vehicles", async (req,res) => {
+app.get("/api/get_all_vehicles", async (req, res) => {
   try {
     const query = `SELECT * FROM vehicles`;
     const response = await con.query(query);
-    console.log(response)
-    res.json(response.rows)
-  }
-  catch (error) {
+    console.log(response);
+    res.json(response.rows[0]);
+  } catch (error) {
     console.error("Error fetching vehicles data", error);
     res.status(500).json({
-      error:"Error fetching in vehicles data"
-    })
+      error: "Error fetching in vehicles data",
+    });
   }
-})
-
+});
 
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);

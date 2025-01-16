@@ -1,24 +1,102 @@
+import Navigation from "../Components/dashboard/navigation";
+
 const people = [
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' },
-  { name: 'Lindsay Walton', title: 'Front-end Developer', email: 'lindsay.walton@example.com', role: 'Member' }
-]
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+  {
+    name: "Lindsay Walton",
+    title: "Front-end Developer",
+    email: "lindsay.walton@example.com",
+    role: "Member",
+  },
+];
 
 export default function Vehicle() {
   return (
     <div className="bg-gray-900">
+      <Navigation />
       <div className="mx-auto max-w-7xl">
         <div className="bg-gray-900 py-10">
           <div className="px-4 sm:px-6 lg:px-8">
@@ -26,7 +104,8 @@ export default function Vehicle() {
               <div className="sm:flex-auto">
                 <h1 className="text-base font-semibold text-white">Users</h1>
                 <p className="mt-2 text-sm text-gray-300">
-                  A list of all the users in your account including their name, title, email and role.
+                  A list of all the users in your account including their name,
+                  title, email and role.
                 </p>
               </div>
               <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -44,19 +123,34 @@ export default function Vehicle() {
                   <table className="min-w-full divide-y divide-gray-700">
                     <thead>
                       <tr>
-                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0">
+                        <th
+                          scope="col"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                        >
                           Name
                         </th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
                           Title
                         </th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
                           Email
                         </th>
-                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
                           Role
                         </th>
-                        <th scope="col" className="relative py-3.5 pl-3 pr-4 sm:pr-0">
+                        <th
+                          scope="col"
+                          className="relative py-3.5 pl-3 pr-4 sm:pr-0"
+                        >
                           <span className="sr-only">Edit</span>
                         </th>
                       </tr>
@@ -67,12 +161,22 @@ export default function Vehicle() {
                           <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
                             {person.name}
                           </td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{person.title}</td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{person.email}</td>
-                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{person.role}</td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                            {person.title}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                            {person.email}
+                          </td>
+                          <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                            {person.role}
+                          </td>
                           <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                            <a href="#" className="text-indigo-400 hover:text-indigo-300">
-                              Edit<span className="sr-only">, {person.name}</span>
+                            <a
+                              href="#"
+                              className="text-indigo-400 hover:text-indigo-300"
+                            >
+                              Edit
+                              <span className="sr-only">, {person.name}</span>
                             </a>
                           </td>
                         </tr>
@@ -86,5 +190,5 @@ export default function Vehicle() {
         </div>
       </div>
     </div>
-  )
+  );
 }
