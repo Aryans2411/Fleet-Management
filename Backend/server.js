@@ -40,7 +40,7 @@ app.use(
 );
 
 let userid = process.env.userid;
-let emailid;
+// let emailid= process.env.emailid;
 // Function to initialize database tables
 async function initializeDatabase() {
   try {
@@ -160,7 +160,19 @@ app.get("/initialise_table", async (req, res) => {
   res.send("Tables initialized successfully");
   console.log("Tables initialized successfully");
 });
-
+// api endpoint for finding out total number of drivers
+app.get("/api/get_totaldriver",async(req,res)=>{
+  try{
+    const query = `
+      SELECT Count(*) FROM Drivers WHERE userid= $1
+    `;
+    const response = await con.query(query,[userid]);
+    res.json(response.rows[0].count);
+  } catch(error){
+    console.log("Error in fetching total number of drivers");
+    res.status(500).json({error:"Fetching total number of drivers"});
+  }
+})
 //vechicle register table
 app.post("/api/vehicle_register", async (req, res) => {
   try {

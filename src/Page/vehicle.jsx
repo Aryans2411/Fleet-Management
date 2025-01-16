@@ -1,5 +1,5 @@
 import Navigation from "../Components/dashboard/navigation";
-
+import Footer from "../Components/Footer/Footer";
 const people = [
   {
     name: "Lindsay Walton",
@@ -189,6 +189,7 @@ export default function Vehicle() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

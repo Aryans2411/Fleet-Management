@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
 export default function Home() {
+  const [driversFreq, setDriverFreq] = useState(0);
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
     revenue: 0,
@@ -10,15 +11,29 @@ export default function Home() {
     activeVehicles: 0,
     vehiclesInMaintenance: 0,
     unusedVehicles: 0,
+    drivers: 0,
   });
 
   useEffect(() => {
-    fetch("/api/dashboard")
-      .then((response) => response.json())
-      .then((data) => setDashboardData(data))
-      .catch((error) => console.error("Error fetching dashboard data:", error));
+      drivernumber();
   }, []);
-
+  const drivernumber = async () => {
+    try {
+      const response = await fetch ("http://localhost:4000/api/get_totaldriver",
+        {
+          method: "GET",
+        }
+      );
+      if(!response.ok){
+        throw new Error("Error in fetching total frequency of drivers");
+      }
+      const data = await response.json();
+      setDriverFreq(data);
+      console.log(driversFreq);
+    } catch(error) {
+      console.error("Failed to fetch drivers frequency:",error.message);
+    }
+  }
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col">
       <Navigation />
@@ -81,6 +96,12 @@ export default function Home() {
               {dashboardData.unusedVehicles}
             </p>
           </div>
+        </div>
+        <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+            <h3 className="text-xl font-semibold mb-2">Drivers</h3>
+            <p className="text-3xl font-bold text-blue-400">
+              {driversFreq}
+            </p>
         </div>
       </div>
       <Footer />

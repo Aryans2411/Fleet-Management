@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Navigation from "../Components/dashboard/navigation";
-
+import Footer from "../Components/Footer/Footer";
 export default function Driver() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [driveInfo, setDriveInfo] = useState([]);
@@ -313,6 +313,7 @@ export default function Driver() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
