@@ -10,6 +10,7 @@
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.7",
     "cra-template": "1.2.0",
+    "dialog": "^0.3.1",
     "express": "^4.21.2",
     "nodemon": "^3.1.9",
     "pg": "^8.13.1",
