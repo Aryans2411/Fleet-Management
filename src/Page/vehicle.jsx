@@ -1,7 +1,13 @@
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
 import { useState, useEffect } from "react";
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  useMapEvents,
+  Marker,
+  Popup,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 export default function Vehicle() {
@@ -36,7 +42,6 @@ export default function Vehicle() {
           longitude: lng,
         }));
         console.log(`Latitude: ${lat}, Longitude: ${lng}`);
-        e.marker([lat,lng]).addto();
       },
     });
 
@@ -51,9 +56,12 @@ export default function Vehicle() {
 
   const getVehicleInfo = async () => {
     try {
-      const response = await fetch("http://localhost:4000/api/get_all_vehicles", {
-        method: "GET",
-      });
+      const response = await fetch(
+        "http://localhost:4000/api/get_all_vehicles",
+        {
+          method: "GET",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error fetching driver list");
@@ -80,13 +88,16 @@ export default function Vehicle() {
     setSuccess("");
     try {
       console.log(formData);
-      const response = await fetch("http://localhost:4000/api/vehicle_register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "http://localhost:4000/api/vehicle_register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -131,17 +142,17 @@ export default function Vehicle() {
   };
 
   return (
-    <div className="bg-gray-900 h-screen w-screen">
+    <div className="bg-gray-900   w-full h-[2000px]">
       <Navigation />
-      <div className="mx-auto max-w-7xl">
+      <div className="mx-auto max-w-7xl w-full">
         <div className="bg-gray-900 py-10">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
                 <h1 className="text-base font-semibold text-white">Vehicles</h1>
                 <p className="mt-2 text-sm text-gray-300">
-                  A list of all the vehicles in your account including details like make,
-                  registration number, and location.
+                  A list of all the vehicles in your account including details
+                  like make, registration number, and location.
                 </p>
               </div>
               <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -173,7 +184,10 @@ export default function Vehicle() {
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="make">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="make"
+                    >
                       Model
                     </label>
                     <input
@@ -187,7 +201,10 @@ export default function Vehicle() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="registrationnumber">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="registrationnumber"
+                    >
                       Registration Number
                     </label>
                     <input
@@ -201,7 +218,10 @@ export default function Vehicle() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="fueltype">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="fueltype"
+                    >
                       Fuel Type
                     </label>
                     <select
@@ -220,7 +240,10 @@ export default function Vehicle() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="idealmileage">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="idealmileage"
+                    >
                       Mileage
                     </label>
                     <input
@@ -235,7 +258,10 @@ export default function Vehicle() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="location">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="location"
+                    >
                       Map
                     </label>
                     <div className="flex justify-center items-center mt-10">
@@ -312,7 +338,6 @@ export default function Vehicle() {
                         >
                           Longitude
                         </th>
-                        
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">

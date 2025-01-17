@@ -113,7 +113,7 @@ export default function Driver() {
   };
 
   return (
-    <div className="bg-gray-900 h-screen w-screen">
+    <div className="bg-gray-900  h-[2000px] w-screen">
       <Navigation />
       <div className="mx-auto max-w-7xl">
         <div className="bg-gray-900 py-10">
