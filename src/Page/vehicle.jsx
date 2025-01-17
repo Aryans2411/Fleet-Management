@@ -112,7 +112,7 @@ export default function Vehicle() {
   };
 
   return (
-    <div className="bg-gray-900">
+    <div className="bg-gray-900 h-screen w-screen">
       <Navigation />
       <div className="mx-auto max-w-7xl">
         <div className="bg-gray-900 py-10">
@@ -126,6 +126,16 @@ export default function Vehicle() {
                 </p>
               </div>
               <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                  {err && (
+                    <div className="bg-red-100 border   border-red-400 text-red-700 px-4 py-2 rounded-lg mb-5 text-center justify-center animate-pulse opacity-100 transition-opacity duration-3000 ease-in-out">
+                      {err}
+                    </div>
+                  )}
+                  {success && (
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-lg mb-5 text-center justify-center animate-pulse opacity-100 transition-opacity duration-3000 ease-in-out">
+                      {success}
+                    </div>
+                  )}
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(true)}
