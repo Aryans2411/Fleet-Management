@@ -187,21 +187,21 @@ app.get("/api/get_totalvehicles", async(req,res) => {
   }
 })
 
-//vechicle register table
+//post api endpoint for vehicle register
 app.post("/api/vehicle_register", async (req, res) => {
   try {
     // Destructure inputs from the request body
     const {
       registrationnumber,
       make,
-      // latitude,
-      // longitude,
+      latitude,
+      longitude,
       fueltype,
       idealmileage,
     } = req.body;
 
     // Validate required fields
-    if (!registrationnumber || !make || !fueltype || !idealmileage) {
+    if (!registrationnumber || !make || !fueltype || !idealmileage || !latitude || !longitude) {
       return res.status(400).json({
         error:
           "Required fields are missing: registrationnumber, make, fueltype, idealmileage",
@@ -217,9 +217,9 @@ app.post("/api/vehicle_register", async (req, res) => {
     // Insert data into the Vehicles table
     const query = `
             INSERT INTO Vehicles (
-                userid, registrationnumber, make, fueltype, idealmileage
+                userid, registrationnumber, make, fueltype, idealmileage,latitude,longitude
             )
-            VALUES ($1, $2, $3, $4, $5)
+            VALUES ($1, $2, $3, $4, $5,$6,$7)
             RETURNING vehicleid;
         `;
 
@@ -227,10 +227,10 @@ app.post("/api/vehicle_register", async (req, res) => {
       userid,
       registrationnumber,
       make,
-      // latitude,
-      // longitude,
       fueltype,
       idealmileage,// Defaults to 'Active' if not provided
+      latitude,
+      longitude,
     ];
 
     const result = await con.query(query, values);

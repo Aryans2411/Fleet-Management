@@ -7,7 +7,7 @@ const initialNavigation = [
   { name: "Vehicle", href: "/vehicle", key: "vehicle" },
   { name: "Driver", href: "/driver", key: "driver" },
   { name: "Analytics", href: "/analytics", key: "analytics" },
-  { name: "Trip", href:"/Trip", key:"Trip"}
+  { name: "Trip", href:"/trip", key:"trip"}
 ];
 
 function classNames(...classes) {

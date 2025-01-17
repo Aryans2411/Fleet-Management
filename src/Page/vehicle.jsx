@@ -1,6 +1,8 @@
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
+import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from "react-leaflet";
+import "leaflet/dist/leaflet.css";
 
 export default function Vehicle() {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -8,61 +10,83 @@ export default function Vehicle() {
   const [err, setErr] = useState("");
   const [success, setSuccess] = useState("");
   const [formData, setFormData] = useState({
-      make: "",
-      registrationnumber: "",
-      fueltype: "",
-      idealmileage: "",
+    make: "",
+    registrationnumber: "",
+    fueltype: "",
+    idealmileage: "",
+    latitude: null,
+    longitude: null,
   });
-  const [formAnimation, setFormAnimation] = useState("opacity-100"); // for form fade-out animation
+  const [formAnimation, setFormAnimation] = useState("opacity-100");
 
   useEffect(() => {
     getVehicleInfo();
   }, []);
-  
+
+  const LocationMarker = () => {
+    const [markerPosition, setMarkerPosition] = useState(null);
+
+    useMapEvents({
+      click: (e) => {
+        const { lat, lng } = e.latlng;
+        setMarkerPosition([lat, lng]);
+        setFormData((prev) => ({
+          ...prev,
+          latitude: lat,
+          longitude: lng,
+        }));
+        console.log(`Latitude: ${lat}, Longitude: ${lng}`);
+        e.marker([lat,lng]).addto();
+      },
+    });
+
+    return markerPosition ? (
+      <Marker position={markerPosition}>
+        <Popup>
+          Latitude: {markerPosition[0]}, Longitude: {markerPosition[1]}
+        </Popup>
+      </Marker>
+    ) : null;
+  };
+
   const getVehicleInfo = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:4000/api/get_all_vehicles",
-          {
-            method: "GET",
-          }
-        );
-  
-        if (!response.ok) {
-          throw new Error("Error fetching driver list");
-        }
-  
-        const data = await response.json();
-        setVehicleInfo(data); // Assuming data.rows contains the drivers
-      } catch (error) {
-        console.error("Failed to fetch vehicles:", error.message);
+    try {
+      const response = await fetch("http://localhost:4000/api/get_all_vehicles", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching driver list");
       }
-    };
-  
-    // Handle input changes
-    const handleInputChange = (e) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    };
+
+      const data = await response.json();
+      setVehicleInfo(data);
+    } catch (error) {
+      console.error("Failed to fetch vehicles:", error.message);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
     setSuccess("");
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/vehicle_register",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      console.log(formData);
+      const response = await fetch("http://localhost:4000/api/vehicle_register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -72,43 +96,38 @@ export default function Vehicle() {
       const result = await response.json();
       console.log("Vehicle registered:", result);
 
-      // Fetch updated driver list
       getVehicleInfo();
 
-      // Reset form data
       setFormData({
         make: "",
         registrationnumber: "",
         fueltype: "",
         idealmileage: "",
+        latitude: null,
+        longitude: null,
       });
-      setSuccess("Vehicle Added Successfully!");
-      setTimeout(() => {
-        setSuccess(null); // Remove success message after animation
-      }, 3000); // Matches duration of animation
 
-      // Fade out form and show success/error message
+      setSuccess("Vehicle Added Successfully!");
+      setTimeout(() => setSuccess(null), 3000);
+
       setFormAnimation("opacity-0");
       setTimeout(() => {
-        setIsFormOpen(false); // Hide form completely after animation
-        setFormAnimation("opacity-100"); // Reset form animation state
-      }, 300); // Duration of the fade-out effect
+        setIsFormOpen(false);
+        setFormAnimation("opacity-100");
+      }, 300);
     } catch (error) {
       console.error("Error submitting form:", error.message);
       setErr(error.message || "Failed to add");
-      setTimeout(() => {
-        setErr(null); // Remove error message after animation
-      }, 3000); // Matches duration of animation
+      setTimeout(() => setErr(null), 3000);
     }
   };
 
-  // Handle form close (cancel)
   const handleCancel = () => {
     setFormAnimation("opacity-0");
     setTimeout(() => {
-      setIsFormOpen(false); // Hide form completely after animation
-      setFormAnimation("opacity-100"); // Reset form animation state
-    }, 300); // Duration of the fade-out effect
+      setIsFormOpen(false);
+      setFormAnimation("opacity-100");
+    }, 300);
   };
 
   return (
@@ -119,27 +138,27 @@ export default function Vehicle() {
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
-                <h1 className="text-base font-semibold text-white">Users</h1>
+                <h1 className="text-base font-semibold text-white">Vehicles</h1>
                 <p className="mt-2 text-sm text-gray-300">
-                  A list of all the users in your account including their name,
-                  title, email and role.
+                  A list of all the vehicles in your account including details like make,
+                  registration number, and location.
                 </p>
               </div>
               <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                  {err && (
-                    <div className="bg-red-100 border   border-red-400 text-red-700 px-4 py-2 rounded-lg mb-5 text-center justify-center animate-pulse opacity-100 transition-opacity duration-3000 ease-in-out">
-                      {err}
-                    </div>
-                  )}
-                  {success && (
-                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-lg mb-5 text-center justify-center animate-pulse opacity-100 transition-opacity duration-3000 ease-in-out">
-                      {success}
-                    </div>
-                  )}
+                {err && (
+                  <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg mb-5 animate-pulse">
+                    {err}
+                  </div>
+                )}
+                {success && (
+                  <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-lg mb-5 animate-pulse">
+                    {success}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(true)}
-                  className="block rounded-md bg-indigo-500 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
+                  className="block rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400 focus:outline-none"
                 >
                   Add Vehicle
                 </button>
@@ -152,13 +171,9 @@ export default function Vehicle() {
                 <h2 className="text-lg font-semibold text-white mb-4">
                   Add New Vehicle
                 </h2>
-
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label
-                      className="block text-sm font-medium text-gray-300"
-                      htmlFor="make"
-                    >
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="make">
                       Model
                     </label>
                     <input
@@ -167,15 +182,12 @@ export default function Vehicle() {
                       name="make"
                       value={formData.make}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
                       required
                     />
                   </div>
                   <div>
-                    <label
-                      className="block text-sm font-medium text-gray-300"
-                      htmlFor="registrationnumber"
-                    >
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="registrationnumber">
                       Registration Number
                     </label>
                     <input
@@ -184,36 +196,31 @@ export default function Vehicle() {
                       name="registrationnumber"
                       value={formData.registrationnumber}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
                       required
                     />
                   </div>
                   <div>
-                    <label
-                      className="block text-sm font-medium text-gray-300"
-                      htmlFor="fueltype"
-                    >
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="fueltype">
                       Fuel Type
                     </label>
                     <select
-                      type="text"
                       id="fueltype"
                       name="fueltype"
                       value={formData.fueltype}
                       onChange={handleInputChange}
-                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
                       required
                     >
-                      <option value="" disabled>Select Fuel Type</option>
+                      <option value="" disabled>
+                        Select Fuel Type
+                      </option>
                       <option value="Petrol">Petrol</option>
                       <option value="Diesel">Diesel</option>
                     </select>
                   </div>
                   <div>
-                    <label
-                      className="block text-sm font-medium text-gray-300"
-                      htmlFor="idealmileage"
-                    >
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="idealmileage">
                       Mileage
                     </label>
                     <input
@@ -223,9 +230,27 @@ export default function Vehicle() {
                       value={formData.idealmileage}
                       onChange={handleInputChange}
                       step={0.01}
-                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
                       required
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="location">
+                      Map
+                    </label>
+                    <div className="flex justify-center items-center mt-10">
+                      <MapContainer
+                        className="w-full max-w-4xl h-96 rounded-lg shadow-md"
+                        center={[12.9716, 77.5946]}
+                        zoom={8}
+                      >
+                        <TileLayer
+                          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <LocationMarker />
+                      </MapContainer>
+                    </div>
                   </div>
                   <div className="flex items-center justify-end">
                     <button
@@ -275,6 +300,19 @@ export default function Vehicle() {
                         >
                           Mileage
                         </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Latitude
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Longitude
+                        </th>
+                        
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -292,6 +330,12 @@ export default function Vehicle() {
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {vehicle.idealmileage}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {vehicle.latitude}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {vehicle.longitude}
                             </td>
                           </tr>
                         ))
