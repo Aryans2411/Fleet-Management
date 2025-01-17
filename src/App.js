@@ -1,6 +1,6 @@
 import "./App.css";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-
+import Trip from "./Page/Trip.jsx";
 import Vehicle from "./Page/vehicle.jsx";
 
 import Driver from "./Page/driver.jsx";
@@ -24,6 +24,7 @@ function App() {
           <Route path="/vehicle" element={<Vehicle />} />
           {/* Add routes for other pages as needed */}
           <Route path="/driver" element={<Driver />} />
+          <Route path="/trip" element={<Trip />} />
           <Route path="/analytics" element={<Analytics />} />
         </Routes>
       </Router>
