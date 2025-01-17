@@ -40,7 +40,7 @@ app.use(
 );
 
 let userid = process.env.userid;
-// let emailid= process.env.emailid;
+let emailid= process.env.emailid;
 // Function to initialize database tables
 async function initializeDatabase() {
   try {
