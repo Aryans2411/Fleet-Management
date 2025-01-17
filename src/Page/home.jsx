@@ -3,6 +3,7 @@ import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
 export default function Home() {
   const [driversFreq, setDriverFreq] = useState(0);
+  const [vehiclesFreq, setVehicleFreq] = useState(0);
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
     revenue: 0,
@@ -16,6 +17,7 @@ export default function Home() {
 
   useEffect(() => {
       drivernumber();
+      vehiclesnumber();
   }, []);
   const drivernumber = async () => {
     try {
@@ -32,6 +34,23 @@ export default function Home() {
       console.log(driversFreq);
     } catch(error) {
       console.error("Failed to fetch drivers frequency:",error.message);
+    }
+  }
+  const vehiclesnumber = async () => {
+    try {
+      const response = await fetch ("http://localhost:4000/api/get_totalvehicles",
+        {
+          method: "GET",
+        }
+      );
+      if(!response.ok){
+        throw new Error("Error in fetching total frequency of vehicles");
+      }
+      const data = await response.json();
+      setVehicleFreq(data);
+      console.log(vehiclesFreq);
+    } catch(error) {
+      console.error("Failed to fetch vehicles frequency:",error.message);
     }
   }
   return (
@@ -67,7 +86,7 @@ export default function Home() {
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Total Vehicles</h3>
             <p className="text-3xl font-bold text-yellow-400">
-              {dashboardData.totalVehicles}
+              {vehiclesFreq}
             </p>
           </div>
         </div>
