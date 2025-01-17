@@ -40,7 +40,7 @@ app.use(
 );
 
 let userid = process.env.userid;
-// let emailid= process.env.emailid;
+let emailid= process.env.emailid;
 // Function to initialize database tables
 async function initializeDatabase() {
   try {
@@ -173,47 +173,53 @@ app.get("/api/get_totaldriver",async(req,res)=>{
     res.status(500).json({error:"Fetching total number of drivers"});
   }
 })
+
+app.get("/api/get_totalvehicles", async(req,res) => {
+  try {
+    const query = `
+      SELECT Count(*) FROM vehicles WHERE userid= $1
+    `;
+    const response = await con.query(query,[userid]);
+    res.json(response.rows[0].count);
+  } catch(error) {
+    console.log("Error in fetching total number of vehicles");
+    res.status(500).json({error:"Fetching total number of vehicles"});
+  }
+})
+
 //vechicle register table
 app.post("/api/vehicle_register", async (req, res) => {
   try {
     // Destructure inputs from the request body
     const {
-      userid,
       registrationnumber,
       make,
-      latitude,
-      longitude,
+      // latitude,
+      // longitude,
       fueltype,
       idealmileage,
-      status,
     } = req.body;
 
     // Validate required fields
-    if (!userid || !registrationnumber || !make || !fueltype) {
+    if (!registrationnumber || !make || !fueltype || !idealmileage) {
       return res.status(400).json({
         error:
-          "Required fields are missing: userid, registrationnumber, make, fueltype",
+          "Required fields are missing: registrationnumber, make, fueltype, idealmileage",
       });
     }
 
     // Validate fueltype
-    const validFuelTypes = ["Petrol", "Diesel", "Electric", "Hybrid"];
+    const validFuelTypes = ["Petrol", "Diesel"];
     if (!validFuelTypes.includes(fueltype)) {
       return res.status(400).json({ error: "Invalid fuel type" });
-    }
-
-    // Validate status (optional field with default value 'Active')
-    const validStatuses = ["Active", "Inactive", "Under Maintenance"];
-    if (status && !validStatuses.includes(status)) {
-      return res.status(400).json({ error: "Invalid status value" });
     }
 
     // Insert data into the Vehicles table
     const query = `
             INSERT INTO Vehicles (
-                userid, registrationnumber, make, latitude, longitude, fueltype, idealmileage, status
+                userid, registrationnumber, make, fueltype, idealmileage
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, COALESCE($8, 'Active'))
+            VALUES ($1, $2, $3, $4, $5)
             RETURNING vehicleid;
         `;
 
@@ -221,11 +227,10 @@ app.post("/api/vehicle_register", async (req, res) => {
       userid,
       registrationnumber,
       make,
-      latitude,
-      longitude,
+      // latitude,
+      // longitude,
       fueltype,
-      idealmileage,
-      status, // Defaults to 'Active' if not provided
+      idealmileage,// Defaults to 'Active' if not provided
     ];
 
     const result = await con.query(query, values);
@@ -337,10 +342,10 @@ app.get("/api/get_all_drivers", async (req, res) => {
 //api for getting all vehicles
 app.get("/api/get_all_vehicles", async (req, res) => {
   try {
-    const query = `SELECT * FROM vehicles`;
-    const response = await con.query(query);
-    console.log(response);
-    res.json(response.rows[0]);
+    const query = `SELECT * FROM vehicles WHERE userid=$1`;
+    const response = await con.query(query, [userid]);
+    console.log(response.rows);
+    res.json(response.rows);
   } catch (error) {
     console.error("Error fetching vehicles data", error);
     res.status(500).json({
