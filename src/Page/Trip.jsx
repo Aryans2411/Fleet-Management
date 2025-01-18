@@ -1,45 +1,463 @@
 import React from "react";
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
-import { MapContainer, TileLayer, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import L from "leaflet";
+import { useState, useEffect } from "react";
 
-const LeafletMap = () => {
-  const LocationMarker = () => {
+export default function Trip() {
+  // Fix for default marker icon issue in Leaflet
+  delete L.Icon.Default.prototype._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  });
+  
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [tripInfo, setTripInfo] = useState([]);
+  const [err, setErr] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [success, setSuccess] = useState("");
+  const [formData, setFormData] = useState({
+    starttime: "",
+    endtime: "",
+    startlatitude: null,
+    startlongitude: null,
+    endlatitude: null,
+    endlongitude: null,
+    distance: null
+  });
+  const [formAnimation, setFormAnimation] = useState("opacity-100");
+  const [markers, setMarkers] = useState([]);
+  const [distance, setDistance] = useState(null);
+
+  useEffect(() => {
+    getTripInfo();
+  }, []);
+
+  const customIcon = new L.Icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    iconSize: [35, 45],
+    iconAnchor: [17, 45],
+    popupAnchor: [0, -40],
+  });
+
+  const MapClickHandler = ({ onMapClick }) => {
     useMapEvents({
       click: (e) => {
         const { lat, lng } = e.latlng;
-        alert(`Latitude: ${lat}, Longitude: ${lng}`);
+        onMapClick(lat, lng);
       },
     });
-
     return null;
   };
 
-  return (
-    <div className="flex justify-center items-center mt-10">
-      <MapContainer
-        className="w-full max-w-4xl h-96 rounded-lg shadow-md"
-        center={[12.9716, 77.5946]}
-        zoom={8}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        <LocationMarker />
-      </MapContainer>
-    </div>
-  );
-};
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371;
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLon = ((lon2 - lon1) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
 
-export default function Trip() {
+  const handleMapClick = (lat, lng) => {
+    setMarkers((prevMarkers) => {
+      const newMarkers = [...prevMarkers, { lat, lng }];
+      if (newMarkers.length === 2) {
+        const dist = calculateDistance(
+          newMarkers[0].lat,
+          newMarkers[0].lng,
+          newMarkers[1].lat,
+          newMarkers[1].lng
+        );
+        setDistance(dist.toFixed(2));
+        
+        // Update formData with both markers and distance
+        setFormData(prev => ({
+          ...prev,
+          startlatitude: parseFloat(newMarkers[0].lat.toFixed(2)),
+          startlongitude: parseFloat(newMarkers[0].lng.toFixed(2)),
+          endlatitude: parseFloat(newMarkers[1].lat.toFixed(2)),
+          endlongitude: parseFloat(newMarkers[1].lng.toFixed(2)),
+          distance: parseInt(dist.toFixed(2))
+        }));
+      } else if (newMarkers.length > 2) {
+        setDistance(null);
+        setFormData(prev => ({
+          ...prev,
+          startlatitude: null,
+          startlongitude: null,
+          endlatitude: null,
+          endlongitude: null,
+          distance: null
+        }));
+        return [{ lat, lng }];
+      } else {
+        // Update just the start coordinates when first marker is placed
+        setFormData(prev => ({
+          ...prev,
+          startlatitude: lat,
+          startlongitude: lng,
+        }));
+      }
+      return newMarkers;
+    });
+  };
+
+  const getTripInfo = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:4000/api/get_all_trips",
+        {
+          method: "GET",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Error fetching trip list");
+      }
+
+      const data = await response.json();
+      setTripInfo(data);
+    } catch (error) {
+      console.error("Failed to fetch trips:", error.message);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErr("");
+    setSuccess("");
+
+    // Validate that all coordinates and distance are present
+    if (!formData.startlatitude || !formData.startlongitude || 
+        !formData.endlatitude || !formData.endlongitude || 
+        !formData.distance) {
+      setErr("Please select both start and end locations on the map");
+      return;
+    }
+
+    try {
+      console.log(formData);
+      const response = await fetch(
+        "http://localhost:4000/api/tripregistered",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error registering trip");
+      }
+
+      const result = await response.json();
+      console.log("Trips registered:", result);
+
+      getTripInfo();
+
+      // Reset form data
+      setFormData({
+        starttime: "",
+        endtime: "",
+        startlatitude: null,
+        startlongitude: null,
+        endlatitude: null,
+        endlongitude: null,
+        distance: null
+      });
+      setMarkers([]); // Clear markers
+      setDistance(null); // Reset distance
+      setSuccess("Trip Added Successfully!");
+      
+      setTimeout(() => {
+        setSuccess(null);
+      }, 3000);
+
+      setFormAnimation("opacity-0");
+      setTimeout(() => {
+        setIsFormOpen(false);
+        setFormAnimation("opacity-100");
+      }, 300);
+    } catch (error) {
+      console.error("Error submitting form:", error.message);
+      setErr(error.message || "Failed to add");
+      setTimeout(() => {
+        setErr(null);
+      }, 3000);
+    }
+  };
+
+  const handleCancel = () => {
+    setFormAnimation("opacity-0");
+    setTimeout(() => {
+      setIsFormOpen(false);
+      setFormAnimation("opacity-100");
+    }, 300);
+  };
+  console.log(formData.startlatitude);
   return (
-    <div>
+    <div className="bg-gray-900 h-[2000px] w-screen">
       <Navigation />
-      <h1 className="text-2xl font-bold text-center my-5">Interactive Map</h1>
-      <LeafletMap />
-      <Footer />
-    </div>
-  );
+      <div className="mx-auto max-w-7xl">
+        <div className="bg-gray-900 py-10">
+          <div className="px-4 sm:px-6 lg:px-8">
+            <div className="sm:flex sm:items-center">
+              <div className="sm:flex-auto">
+                <h1 className="text-base font-semibold text-white">Trips</h1>
+                <p className="mt-2 text-sm text-gray-300">
+                  A list of all the trips including their starttime, endtime
+                  startlocation, endlocation, and distancetravelled.
+                </p>
+              </div>
+              <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                <div className="text-center justify-center">
+                  {err && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded-lg mb-5 text-center justify-center animate-pulse opacity-100 transition-opacity duration-3000 ease-in-out">
+                      {err}
+                    </div>
+                  )}
+                  {success && (
+                    <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded-lg mb-5 text-center justify-center animate-pulse opacity-100 transition-opacity duration-3000 ease-in-out">
+                      {success}
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsFormOpen(true)}
+                  className="block rounded-md bg-indigo-500 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-400"
+                >
+                  Add Trips
+                </button>
+              </div>
+            </div>
+            {isFormOpen && (
+              <div className={`mt-8 bg-gray-800 p-6 rounded-lg shadow-md transition-opacity duration-300 ease-in-out ${formAnimation}`}>
+                <h2 className="text-lg font-semibold text-white mb-4">Add New Trip</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="starttime">
+                      Start Time
+                    </label>
+                    <input
+                      type="text"
+                      id="starttime"
+                      name="starttime"
+                      value={formData.starttime}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-300" htmlFor="endtime">
+                      End Time
+                    </label>
+                    <input
+                      type="text"
+                      id="endtime"
+                      name="endtime"
+                      value={formData.endtime}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <h2 className="text-center text-xl font-bold mt-4 mb-4 text-white">
+                      {distance ? `Distance: ${distance} km` : "Click two points to calculate distance"}
+                    </h2>
+                    <div className="text-sm text-gray-300 mb-4">
+                      {formData.startlatitude && formData.startlongitude && (
+                        <div>Start: ({formData.startlatitude.toFixed(5)}, {formData.startlongitude.toFixed(5)})</div>
+                      )}
+                      {formData.endlatitude && formData.endlongitude && (
+                        <div>End: ({formData.endlatitude.toFixed(5)}, {formData.endlongitude.toFixed(5)})</div>
+                      )}
+                    </div>
+                    <MapContainer
+                      center={[12.9716, 77.5946]}
+                      zoom={15}
+                      style={{ height: "90vh", width: "100%" }}
+                    >
+                      <TileLayer
+                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+                      />
+                      <MapClickHandler onMapClick={handleMapClick} />
+                      {markers.map((marker, index) => (
+                        <Marker key={index} position={[marker.lat, marker.lng]} icon={customIcon}>
+                          <Popup>
+                            {index === 0 ? "Start Location" : "End Location"}<br />
+                            Latitude: {marker.lat.toFixed(5)}<br />
+                            Longitude: {marker.lng.toFixed(5)}
+                          </Popup>
+                        </Marker>
+                      ))}
+                    </MapContainer>
+                  </div>
+                  <div className="flex items-center justify-end">
+                    <button
+                      type="button"
+                      onClick={handleCancel}
+                      className="mr-4 px-4 py-2 bg-gray-600 text-sm font-medium text-white rounded-md hover:bg-gray-500"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-2 bg-indigo-500 text-sm font-medium text-white rounded-md hover:bg-indigo-400"
+                    >
+                      Save
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+              <div className="mt-8 flow-root">
+                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                  <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                    <table className="min-w-full divide-y divide-gray-700">
+                      <thead>
+                        <tr>
+                        <th
+                            scope="col"
+                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                          >
+                            Driver
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                          >
+                            Vehicle
+                          </th>
+                          <th
+                            scope="col"
+                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                          >
+                            Start Latitude
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            Start Longitude
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            End Latitude
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            End Longitude
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            StartTime
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            EndTime
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            Distance Travelled
+                          </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            Status
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-800">
+                        {tripInfo && tripInfo.length > 0 ? (
+                          tripInfo.map((trip, index) => (
+                            <tr key={index}>
+                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
+                                {trip.driverid}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.vehicleid}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.Startlatitude}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.Startlongitude}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.Endlongitude}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.Endlatitude}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.StartTime}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.EndTime}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.DistanceTravelled}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.TripStatus}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td
+                              colSpan={4}
+                              className="text-center text-white py-4"
+                            >
+                              No Trips Found
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
 };

@@ -426,6 +426,7 @@ app.post("/api/tripregistered", async (req, res) => {
     } else {
       return res.status(404).json({ error: "No inactive vehicles available." });
     }
+    console.log(bestVehicleID)
     // selecting driver_id
     const query3 = `
       SELECT driverid
@@ -486,6 +487,39 @@ app.post("/api/tripregistered", async (req, res) => {
   } catch (error) {
     console.error("Error in registering trips:", error);
     res.status(500).json({ error: "Error in registering for trips" });
+  }
+});
+//API endpoint for getting all trips
+app.get("/api/get_all_trips", async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        Trips.tripid,
+        Trips.userid,
+        Drivers.name AS name,
+        Vehicles.registrationNumber AS registrationnumber,
+        Trips.Startlatitude,
+        Trips.Startlongitude,
+        Trips.Endlatitude,
+        Trips.Endlongitude,
+        Trips.StartTime,
+        Trips.EndTime,
+        Trips.DistanceTravelled,
+        Trips.TripStatus
+      FROM Trips
+      INNER JOIN Drivers ON Trips.driverid = Drivers.driverid
+      INNER JOIN Vehicles ON Trips.vehicleid = Vehicles.vehicleid
+      WHERE Trips.userid = $1
+    `;
+    
+    // console.log("reached here", userid)
+    const response = await con.query(query, [userid]);
+    res.json(response.rows);
+  } catch (error) {
+    console.error("Error fetching trips data:", error);
+    res.status(500).json({
+      error: "Error fetching trips data",
+    });
   }
 });
 
