@@ -23,15 +23,15 @@ export default function Trip() {
   const [formData, setFormData] = useState({
     starttime: "",
     endtime: "",
-    startlatitude: null,
-    startlongitude: null,
-    endlatitude: null,
-    endlongitude: null,
-    distance: null
+    startlatitude1: null,
+    startlongitude1: null,
+    endlatitude1: null,
+    endlongitude1: null,
+    distancetravalled1: null
   });
   const [formAnimation, setFormAnimation] = useState("opacity-100");
   const [markers, setMarkers] = useState([]);
-  const [distance, setDistance] = useState(null);
+  const [distancetravalled1, setdistancetravalled1] = useState(null);
 
   useEffect(() => {
     getTripInfo();
@@ -54,7 +54,7 @@ export default function Trip() {
     return null;
   };
 
-  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+  const calculatedistancetravalled1 = (lat1, lon1, lat2, lon2) => {
     const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
     const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -68,44 +68,45 @@ export default function Trip() {
     return R * c;
   };
 
-  const handleMapClick = (lat, lng) => {
+  const handleMapClick = async (lat, lng) => {
     setMarkers((prevMarkers) => {
       const newMarkers = [...prevMarkers, { lat, lng }];
       if (newMarkers.length === 2) {
-        const dist = calculateDistance(
+        const dist = calculatedistancetravalled1(
           newMarkers[0].lat,
           newMarkers[0].lng,
           newMarkers[1].lat,
           newMarkers[1].lng
         );
-        setDistance(dist.toFixed(2));
+        setdistancetravalled1(dist.toFixed(2));
         
-        // Update formData with both markers and distance
+        // Update formData with both markers and distancetravalled1
         setFormData(prev => ({
           ...prev,
-          startlatitude: parseFloat(newMarkers[0].lat.toFixed(2)),
-          startlongitude: parseFloat(newMarkers[0].lng.toFixed(2)),
-          endlatitude: parseFloat(newMarkers[1].lat.toFixed(2)),
-          endlongitude: parseFloat(newMarkers[1].lng.toFixed(2)),
-          distance: parseInt(dist.toFixed(2))
+          startlatitude1: parseFloat(newMarkers[0].lat.toFixed(2)),
+          startlongitude1: parseFloat(newMarkers[0].lng.toFixed(2)),
+          endlatitude1: parseFloat(newMarkers[1].lat.toFixed(2)),
+          endlongitude1: parseFloat(newMarkers[1].lng.toFixed(2)),
+          distancetravalled1: parseInt(dist.toFixed(2)),
         }));
+        console.log(FormData);
       } else if (newMarkers.length > 2) {
-        setDistance(null);
+        setdistancetravalled1(null);
         setFormData(prev => ({
           ...prev,
-          startlatitude: null,
-          startlongitude: null,
-          endlatitude: null,
-          endlongitude: null,
-          distance: null
+          startlatitude1: null,
+          startlongitude1: null,
+          endlatitude1: null,
+          endlongitude1: null,
+          distancetravalled1: null
         }));
         return [{ lat, lng }];
       } else {
         // Update just the start coordinates when first marker is placed
         setFormData(prev => ({
           ...prev,
-          startlatitude: lat,
-          startlongitude: lng,
+          startlatitude1: lat,
+          startlongitude1: lng,
         }));
       }
       return newMarkers;
@@ -126,6 +127,7 @@ export default function Trip() {
       }
 
       const data = await response.json();
+      console.log(data);
       setTripInfo(data);
     } catch (error) {
       console.error("Failed to fetch trips:", error.message);
@@ -145,10 +147,10 @@ export default function Trip() {
     setErr("");
     setSuccess("");
 
-    // Validate that all coordinates and distance are present
-    if (!formData.startlatitude || !formData.startlongitude || 
-        !formData.endlatitude || !formData.endlongitude || 
-        !formData.distance) {
+    // Validate that all coordinates and distancetravalled1 are present
+    if (!formData.startlatitude1 || !formData.startlongitude1 || 
+        !formData.endlatitude1 || !formData.endlongitude1 || 
+        !formData.distancetravalled1) {
       setErr("Please select both start and end locations on the map");
       return;
     }
@@ -180,14 +182,14 @@ export default function Trip() {
       setFormData({
         starttime: "",
         endtime: "",
-        startlatitude: null,
-        startlongitude: null,
-        endlatitude: null,
-        endlongitude: null,
-        distance: null
+        startlatitude1: null,
+        startlongitude1: null,
+        endlatitude1: null,
+        endlongitude1: null,
+        distancetravalled1: null
       });
       setMarkers([]); // Clear markers
-      setDistance(null); // Reset distance
+      setdistancetravalled1(null); // Reset distancetravalled1
       setSuccess("Trip Added Successfully!");
       
       setTimeout(() => {
@@ -215,7 +217,7 @@ export default function Trip() {
       setFormAnimation("opacity-100");
     }, 300);
   };
-  console.log(formData.startlatitude);
+  console.log(formData.startlatitude1);
   return (
     <div className="bg-gray-900 h-[2000px] w-screen">
       <Navigation />
@@ -227,7 +229,7 @@ export default function Trip() {
                 <h1 className="text-base font-semibold text-white">Trips</h1>
                 <p className="mt-2 text-sm text-gray-300">
                   A list of all the trips including their starttime, endtime
-                  startlocation, endlocation, and distancetravelled.
+                  startlocation, endlocation, and distancetravalled1travelled.
                 </p>
               </div>
               <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -286,14 +288,14 @@ export default function Trip() {
                   </div>
                   <div>
                     <h2 className="text-center text-xl font-bold mt-4 mb-4 text-white">
-                      {distance ? `Distance: ${distance} km` : "Click two points to calculate distance"}
+                      {distancetravalled1 ? `distancetravalled1: ${distancetravalled1} km` : "Click two points to calculate distancetravalled1"}
                     </h2>
                     <div className="text-sm text-gray-300 mb-4">
-                      {formData.startlatitude && formData.startlongitude && (
-                        <div>Start: ({formData.startlatitude.toFixed(5)}, {formData.startlongitude.toFixed(5)})</div>
+                      {formData.startlatitude1 && formData.startlongitude1 && (
+                        <div>Start: ({formData.startlatitude1.toFixed(5)}, {formData.startlongitude1.toFixed(5)})</div>
                       )}
-                      {formData.endlatitude && formData.endlongitude && (
-                        <div>End: ({formData.endlatitude.toFixed(5)}, {formData.endlongitude.toFixed(5)})</div>
+                      {formData.endlatitude1 && formData.endlongitude1 && (
+                        <div>End: ({formData.endlatitude1.toFixed(5)}, {formData.endlongitude1.toFixed(5)})</div>
                       )}
                     </div>
                     <MapContainer
@@ -393,7 +395,7 @@ export default function Trip() {
                             scope="col"
                             className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                           >
-                            Distance Travelled
+                            distanceTravalled
                           </th>
                           <th
                             scope="col"
@@ -408,34 +410,34 @@ export default function Trip() {
                           tripInfo.map((trip, index) => (
                             <tr key={index}>
                               <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                                {trip.driverid}
+                                {trip.name}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.vehicleid}
+                                {trip.registrationnumber}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.Startlatitude}
+                                {trip.startlatitude}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.Startlongitude}
+                                {trip.startlongitude}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.Endlongitude}
+                                {trip.endlongitude}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.Endlatitude}
+                                {trip.endlatitude}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.StartTime}
+                                {trip.starttime}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.EndTime}
+                                {trip.endtime}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.DistanceTravelled}
+                                {trip.distancetravelled}
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.TripStatus}
+                                {trip.tripstatus}
                               </td>
                             </tr>
                           ))

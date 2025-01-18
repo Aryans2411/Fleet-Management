@@ -17,7 +17,7 @@ CREATE TABLE Vehicles (
     longitude NUMERIC(10, 6), -- Assuming precision for longitude
     fueltype VARCHAR(10) CHECK (fueltype IN ('Petrol', 'Diesel', 'Electric', 'Hybrid')) NOT NULL,
     idealmileage NUMERIC(15,2),
-    status VARCHAR(20) CHECK (status IN ('Active', 'Inactive', 'Under Maintenance')) DEFAULT 'Active',
+    status VARCHAR(20) CHECK (status IN ('Active', 'Inactive', 'Under Maintenance')) DEFAULT 'Inactive',
     FOREIGN KEY (userid) REFERENCES Users(userid)
 );
 
@@ -53,4 +53,6 @@ CREATE TABLE Trips (
     FOREIGN KEY (userid) REFERENCES Users(userid)
 );
 
- 
+--  for modifying vehicles table to inactive the default status
+ALTER TABLE Vehicles
+ALTER COLUMN status SET DEFAULT 'Inactive';

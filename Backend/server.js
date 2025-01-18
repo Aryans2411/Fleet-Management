@@ -358,21 +358,22 @@ app.get("/api/get_all_vehicles", async (req, res) => {
 app.post("/api/tripregistered", async (req, res) => {
   try {
     const {
+      starttime,
+      endtime,
       startlatitude1,
       startlongitude1,
       endlatitude1,
       endlongitude1,
-      starttime,
-      endtime,
-      distancetravelled1,
+      distancetravalled1,
     } = req.body;
-    // console.log(distancetravelled1);
+    console.log(req.body);
     // Parse numeric and integer values
     const startlatitude = parseFloat(startlatitude1);
     const startlongitude = parseFloat(startlongitude1);
     const endlatitude = parseFloat(endlatitude1);
     const endlongitude = parseFloat(endlongitude1);
-    const distancetravelled = parseInt(distancetravelled1, 10);
+    const distancetravelled = parseInt(distancetravalled1);
+    console.log(distancetravalled1);
 
     // Validate required fields
     if (
