@@ -7,6 +7,7 @@ import fs from "fs";
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import cors from "cors";
+import { start } from "repl";
 
 const { Client } = pkg;
 const app = express();
@@ -351,6 +352,140 @@ app.get("/api/get_all_vehicles", async (req, res) => {
     res.status(500).json({
       error: "Error fetching in vehicles data",
     });
+  }
+});
+// API endpoint for trip backend
+app.post("/api/tripregistered", async (req, res) => {
+  try {
+    const {
+      startlatitude1,
+      startlongitude1,
+      endlatitude1,
+      endlongitude1,
+      starttime,
+      endtime,
+      distancetravelled1,
+    } = req.body;
+    // console.log(distancetravelled1);
+    // Parse numeric and integer values
+    const startlatitude = parseFloat(startlatitude1);
+    const startlongitude = parseFloat(startlongitude1);
+    const endlatitude = parseFloat(endlatitude1);
+    const endlongitude = parseFloat(endlongitude1);
+    const distancetravelled = parseInt(distancetravelled1, 10);
+
+    // Validate required fields
+    if (
+      !startlatitude ||
+      !startlongitude ||
+      !endlatitude ||
+      !endlongitude ||
+      !starttime
+    ) {
+      return res
+        .status(400)
+        .json({ error: "Please fill all required fields properly." });
+    }
+
+    // Find the best-suited vehicle ID (Placeholder for logic)
+    let bestVehicleID = null; // Initialize variable to store the best vehicle ID
+
+    /*
+      Algorithm for finding the best-suited vehicle:
+      1. Query the database to get all inactive vehicles and their current locations (latitude, longitude).
+      2. Calculate the Euclidean distance between the start point of the trip (startlatitude, startlongitude) and each vehicle's location.
+      3. Select the vehicle with the minimum distance.
+      4. Assign the vehicle ID to the `bestVehicleID` variable.
+    */
+    const inactiveVehiclesQuery = `
+      SELECT vehicleid, latitude, longitude
+      FROM vehicles
+      WHERE status = 'Inactive';
+    `;
+    const vehicles = await con.query(inactiveVehiclesQuery);
+
+    if (vehicles.rows.length > 0) {
+      let minDistance = Number.MAX_SAFE_INTEGER;
+
+      vehicles.rows.forEach((vehicle) => {
+        const vehicleLatitude = parseFloat(vehicle.latitude);
+        const vehicleLongitude = parseFloat(vehicle.longitude);
+
+        // Calculate Euclidean distance
+        const distance = Math.sqrt(
+          Math.pow(vehicleLatitude - startlatitude, 2) +
+            Math.pow(vehicleLongitude - startlongitude, 2)
+        );
+      
+        // Update the bestVehicleID if a closer vehicle is found
+        if (distance < minDistance) {
+          minDistance = distance;
+          bestVehicleID = vehicle.vehicleid;
+        }
+      });
+    } else {
+      return res.status(404).json({ error: "No inactive vehicles available." });
+    }
+    // selecting driver_id
+    const query3 = `
+      SELECT driverid
+      FROM drivers
+      WHERE userid = $1 AND assignedvehicleid IS NULL;
+    `;
+    const response3 = await con.query(query3,[userid]);
+    const driverid  = response3.rows[0].driverid;
+    console.log(driverid);
+    // Define the query to insert the trip into the database
+    const query = `
+    INSERT INTO trips (
+      userid,
+      vehicleid,
+      driverid,
+      startlatitude,
+      startlongitude,
+        endlatitude,
+        endlongitude,
+        starttime,
+        endtime,
+        distancetravelled
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10)
+        RETURNING tripid;
+        `;
+
+        // console.log("reached here",distancetravelled);
+    // Execute the query
+    const response = await con.query(query, [
+      userid,
+      bestVehicleID,
+      driverid,
+      startlatitude,
+      startlongitude,
+      endlatitude,
+      endlongitude,
+      starttime,
+      endtime,
+      distancetravelled,
+    ]);
+    const query4 = `
+      UPDATE drivers
+      SET assignedvehicleid = $1
+      WHERE driverid = $2
+    `;
+    const response4 = await con.query(query4,[bestVehicleID,driverid]);
+    const query5 = `
+      UPDATE vehicles
+      SET status = $1
+      WHERE vehicleid = $2
+    `;
+    const response5 = await con.query(query5,["Active",bestVehicleID]);
+
+    // console.log(response4.rows);
+    // Return the newly created trip ID
+    console.log(response.rows);
+    res.json(response.rows);
+  } catch (error) {
+    console.error("Error in registering trips:", error);
+    res.status(500).json({ error: "Error in registering for trips" });
   }
 });
 

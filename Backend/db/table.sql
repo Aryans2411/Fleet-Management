@@ -36,17 +36,19 @@ CREATE TABLE Drivers (
 
 -- 4. Trips Table
 CREATE TABLE Trips (
-    TripID SERIAL PRIMARY KEY,
+    tripID SERIAL PRIMARY KEY,
     userid VARCHAR NOT NULL,
-    VehicleID INT NOT NULL, -- Foreign key to Vehicles table
+    vehicleID INT NOT NULL, -- Foreign key to Vehicles table
     driverid INT NOT NULL, -- Foreign key to Drivers table
-    StartLocation VARCHAR(255) NOT NULL,
-    EndLocation VARCHAR(255) NOT NULL,
+    Startlatitude NUMERIC(11,8) NOT NULL,
+    Startlongitude NUMERIC(11,8) NOT NULL,
+    Endlatitude NUMERIC(11,8),
+    Endlongitude NUMERIC(11,8),
     StartTime TIMESTAMP NOT NULL,
     EndTime TIMESTAMP,
     DistanceTravelled INT DEFAULT 0,
     TripStatus VARCHAR(20) CHECK (TripStatus IN ('Scheduled', 'In Progress', 'Completed', 'Cancelled')) DEFAULT 'Scheduled',
-    FOREIGN KEY (VehicleID) REFERENCES Vehicles(VehicleID),
+    FOREIGN KEY (vehicleID) REFERENCES Vehicles(vehicleID),
     FOREIGN KEY (driverid) REFERENCES Drivers(driverid),
     FOREIGN KEY (userid) REFERENCES Users(userid)
 );

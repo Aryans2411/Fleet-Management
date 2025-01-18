@@ -20,8 +20,8 @@ const LeafletMap = () => {
     <div className="flex justify-center items-center mt-10">
       <MapContainer
         className="w-full max-w-4xl h-96 rounded-lg shadow-md"
-        center={[51.505, -0.09]}
-        zoom={13}
+        center={[12.9716, 77.5946]}
+        zoom={8}
       >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
