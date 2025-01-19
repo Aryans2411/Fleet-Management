@@ -275,6 +275,12 @@ export default function Driver() {
                         >
                           Earning Per Km
                         </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Status
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -292,6 +298,11 @@ export default function Driver() {
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {driver.earningperkm}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {driver.assignedvehicleid > 0
+                                ? "Engaged"
+                                : "Free"}
                             </td>
                           </tr>
                         ))

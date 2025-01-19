@@ -41,7 +41,7 @@ app.use(
 );
 
 let userid = process.env.userid;
-let emailid= process.env.emailid;
+let emailid = process.env.emailid;
 // Function to initialize database tables
 async function initializeDatabase() {
   try {
@@ -162,31 +162,31 @@ app.get("/initialise_table", async (req, res) => {
   console.log("Tables initialized successfully");
 });
 // api endpoint for finding out total number of drivers
-app.get("/api/get_totaldriver",async(req,res)=>{
-  try{
+app.get("/api/get_totaldriver", async (req, res) => {
+  try {
     const query = `
       SELECT Count(*) FROM Drivers WHERE userid= $1
     `;
-    const response = await con.query(query,[userid]);
+    const response = await con.query(query, [userid]);
     res.json(response.rows[0].count);
-  } catch(error){
+  } catch (error) {
     console.log("Error in fetching total number of drivers");
-    res.status(500).json({error:"Fetching total number of drivers"});
+    res.status(500).json({ error: "Fetching total number of drivers" });
   }
-})
+});
 
-app.get("/api/get_totalvehicles", async(req,res) => {
+app.get("/api/get_totalvehicles", async (req, res) => {
   try {
     const query = `
       SELECT Count(*) FROM vehicles WHERE userid= $1
     `;
-    const response = await con.query(query,[userid]);
+    const response = await con.query(query, [userid]);
     res.json(response.rows[0].count);
-  } catch(error) {
+  } catch (error) {
     console.log("Error in fetching total number of vehicles");
-    res.status(500).json({error:"Fetching total number of vehicles"});
+    res.status(500).json({ error: "Fetching total number of vehicles" });
   }
-})
+});
 
 //post api endpoint for vehicle register
 app.post("/api/vehicle_register", async (req, res) => {
@@ -202,7 +202,14 @@ app.post("/api/vehicle_register", async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!registrationnumber || !make || !fueltype || !idealmileage || !latitude || !longitude) {
+    if (
+      !registrationnumber ||
+      !make ||
+      !fueltype ||
+      !idealmileage ||
+      !latitude ||
+      !longitude
+    ) {
       return res.status(400).json({
         error:
           "Required fields are missing: registrationnumber, make, fueltype, idealmileage",
@@ -229,7 +236,7 @@ app.post("/api/vehicle_register", async (req, res) => {
       registrationnumber,
       make,
       fueltype,
-      idealmileage,// Defaults to 'Active' if not provided
+      idealmileage, // Defaults to 'Active' if not provided
       latitude,
       longitude,
     ];
@@ -417,7 +424,7 @@ app.post("/api/tripregistered", async (req, res) => {
           Math.pow(vehicleLatitude - startlatitude, 2) +
             Math.pow(vehicleLongitude - startlongitude, 2)
         );
-      
+
         // Update the bestVehicleID if a closer vehicle is found
         if (distance < minDistance) {
           minDistance = distance;
@@ -427,15 +434,15 @@ app.post("/api/tripregistered", async (req, res) => {
     } else {
       return res.status(404).json({ error: "No inactive vehicles available." });
     }
-    console.log(bestVehicleID)
+    console.log(bestVehicleID);
     // selecting driver_id
     const query3 = `
       SELECT driverid
       FROM drivers
       WHERE userid = $1 AND assignedvehicleid IS NULL;
     `;
-    const response3 = await con.query(query3,[userid]);
-    const driverid  = response3.rows[0].driverid;
+    const response3 = await con.query(query3, [userid]);
+    const driverid = response3.rows[0].driverid;
     console.log(driverid);
     // Define the query to insert the trip into the database
     const query = `
@@ -454,7 +461,7 @@ app.post("/api/tripregistered", async (req, res) => {
         RETURNING tripid;
         `;
 
-        // console.log("reached here",distancetravelled);
+    // console.log("reached here",distancetravelled);
     // Execute the query
     const response = await con.query(query, [
       userid,
@@ -473,13 +480,13 @@ app.post("/api/tripregistered", async (req, res) => {
       SET assignedvehicleid = $1
       WHERE driverid = $2
     `;
-    const response4 = await con.query(query4,[bestVehicleID,driverid]);
+    const response4 = await con.query(query4, [bestVehicleID, driverid]);
     const query5 = `
       UPDATE vehicles
       SET status = $1
       WHERE vehicleid = $2
     `;
-    const response5 = await con.query(query5,["Active",bestVehicleID]);
+    const response5 = await con.query(query5, ["Active", bestVehicleID]);
 
     // console.log(response4.rows);
     // Return the newly created trip ID
@@ -512,7 +519,7 @@ app.get("/api/get_all_trips", async (req, res) => {
       INNER JOIN Vehicles ON Trips.vehicleid = Vehicles.vehicleid
       WHERE Trips.userid = $1
     `;
-    
+
     // console.log("reached here", userid)
     const response = await con.query(query, [userid]);
     res.json(response.rows);
@@ -521,6 +528,20 @@ app.get("/api/get_all_trips", async (req, res) => {
     res.status(500).json({
       error: "Error fetching trips data",
     });
+  }
+});
+
+//API endpoint for getting total active vehicles
+app.get("/api/get_active_vehicle", async (req, res) => {
+  try {
+    const query = `SELECT Count(*) FROM vehicles where userid=$1 AND status='Active'`;
+    const response = await con.query(query, [userid]);
+    const activeVehicleCount = response.rows[0].count;
+    console.log("active vehicles", activeVehicleCount);
+    res.json(response.rows[0].count); // return only the count as an object
+  } catch (error) {
+    console.error("error in fetching total active vehicles", error);
+    res.status(500).json({ error: "error in fetching active vehicles" });
   }
 });
 

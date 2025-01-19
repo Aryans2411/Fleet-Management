@@ -4,6 +4,8 @@ import Footer from "../Components/Footer/Footer";
 export default function Home() {
   const [driversFreq, setDriverFreq] = useState(0);
   const [vehiclesFreq, setVehicleFreq] = useState(0);
+  const [actvvehicle, setActvehicle] = useState(0);
+
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
     revenue: 0,
@@ -16,43 +18,66 @@ export default function Home() {
   });
 
   useEffect(() => {
-      drivernumber();
-      vehiclesnumber();
+    drivernumber();
+    vehiclesnumber();
+    actvehicle();
   }, []);
+
   const drivernumber = async () => {
     try {
-      const response = await fetch ("http://localhost:4000/api/get_totaldriver",
+      const response = await fetch(
+        "http://localhost:4000/api/get_totaldriver",
         {
           method: "GET",
         }
       );
-      if(!response.ok){
+      if (!response.ok) {
         throw new Error("Error in fetching total frequency of drivers");
       }
       const data = await response.json();
       setDriverFreq(data);
-      console.log(driversFreq);
-    } catch(error) {
-      console.error("Failed to fetch drivers frequency:",error.message);
+      //  console.log(driversFreq);
+    } catch (error) {
+      console.error("Failed to fetch drivers frequency:", error.message);
     }
-  }
+  };
   const vehiclesnumber = async () => {
     try {
-      const response = await fetch ("http://localhost:4000/api/get_totalvehicles",
+      const response = await fetch(
+        "http://localhost:4000/api/get_totalvehicles",
         {
           method: "GET",
         }
       );
-      if(!response.ok){
+      if (!response.ok) {
         throw new Error("Error in fetching total frequency of vehicles");
       }
       const data = await response.json();
       setVehicleFreq(data);
-      console.log(vehiclesFreq);
-    } catch(error) {
-      console.error("Failed to fetch vehicles frequency:",error.message);
+    } catch (error) {
+      console.error("Failed to fetch vehicles frequency:", error);
     }
-  }
+  };
+
+  const actvehicle = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:4000/api/get_active_vehicle",
+        {
+          method: "GET",
+        }
+      );
+      if (!response.ok)
+        throw new Error("Error in fetching total active vehicles");
+
+      const data = await response.json();
+      setActvehicle(data);
+      console.log("total vehicles", vehiclesFreq);
+      console.log("active vehicle", actvvehicle);
+    } catch (error) {
+      console.error("Failed to fetch active vehicles", error);
+    }
+  };
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col">
       <Navigation />
@@ -85,17 +110,13 @@ export default function Home() {
         <div className="card">
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Total Vehicles</h3>
-            <p className="text-3xl font-bold text-yellow-400">
-              {vehiclesFreq}
-            </p>
+            <p className="text-3xl font-bold text-yellow-400">{vehiclesFreq}</p>
           </div>
         </div>
         <div className="card">
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Active Vehicles</h3>
-            <p className="text-3xl font-bold text-teal-400">
-              {dashboardData.activeVehicles}
-            </p>
+            <p className="text-3xl font-bold text-teal-400">{actvvehicle}</p>
           </div>
         </div>
         <div className="card">
@@ -112,15 +133,13 @@ export default function Home() {
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Unused Vehicles</h3>
             <p className="text-3xl font-bold text-purple-400">
-              {dashboardData.unusedVehicles}
+              {vehiclesFreq - actvvehicle}
             </p>
           </div>
         </div>
         <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Drivers</h3>
-            <p className="text-3xl font-bold text-blue-400">
-              {driversFreq}
-            </p>
+          <h3 className="text-xl font-semibold mb-2">Drivers</h3>
+          <p className="text-3xl font-bold text-blue-400">{driversFreq}</p>
         </div>
       </div>
       <Footer />
