@@ -1,5 +1,7 @@
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 import { useState, useEffect } from "react";
 import {
   MapContainer,
@@ -8,13 +10,14 @@ import {
   Marker,
   Popup,
 } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 
 export default function Vehicle() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [vehicleInfo, setVehicleInfo] = useState([]);
   const [err, setErr] = useState("");
   const [success, setSuccess] = useState("");
+  const [latitude, setLatitude] = useState(); 
+  const [longitude, setLongitude] = useState();
   const [formData, setFormData] = useState({
     make: "",
     registrationnumber: "",
@@ -28,7 +31,12 @@ export default function Vehicle() {
   useEffect(() => {
     getVehicleInfo();
   }, []);
-
+  const customIcon = new L.Icon({
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      iconSize: [35, 45],
+      iconAnchor: [17, 45],
+      popupAnchor: [0, -40],
+    });
   const LocationMarker = () => {
     const [markerPosition, setMarkerPosition] = useState(null);
 
@@ -41,17 +49,11 @@ export default function Vehicle() {
           latitude: lat,
           longitude: lng,
         }));
+        setLatitude(lat);
+        setLongitude(lng);
         console.log(`Latitude: ${lat}, Longitude: ${lng}`);
       },
     });
-
-    return markerPosition ? (
-      <Marker position={markerPosition}>
-        <Popup>
-          Latitude: {markerPosition[0]}, Longitude: {markerPosition[1]}
-        </Popup>
-      </Marker>
-    ) : null;
   };
 
   const getVehicleInfo = async () => {
@@ -68,6 +70,7 @@ export default function Vehicle() {
       }
 
       const data = await response.json();
+      console.log(data);
       setVehicleInfo(data);
     } catch (error) {
       console.error("Failed to fetch vehicles:", error.message);
@@ -274,6 +277,13 @@ export default function Vehicle() {
                           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
+                        {latitude && longitude && (
+                          <Marker position={[latitude, longitude]} icon={customIcon}>
+                            <Popup>
+                              Latitude: {latitude}, Longitude: {longitude}
+                            </Popup>
+                          </Marker>
+                        )}
                         <LocationMarker />
                       </MapContainer>
                     </div>
@@ -395,6 +405,29 @@ export default function Vehicle() {
                   </table>
                 </div>
               </div>
+            </div>
+            <div>
+              <h3 className="text-white">Vehicle Locations</h3>
+              <MapContainer
+                className="w-full max-w-4xl h-96 rounded-lg shadow-md"
+                center={[12.9716, 77.5946]}
+                zoom={12}
+              >
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                {vehicleInfo.map((mark, index) => 
+                  
+                    <Marker 
+                      key={index} 
+                      position={[mark.latitude, mark.longitude]} 
+                      icon={customIcon}
+                    >
+                    </Marker>
+                 
+                )}
+              </MapContainer>
             </div>
           </div>
         </div>
