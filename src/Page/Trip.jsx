@@ -1,11 +1,18 @@
 import React from "react";
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  useMapEvents,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
-import 'leaflet-routing-machine';
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+import "leaflet-routing-machine";
+import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
 import { useState, useEffect } from "react";
 
 export default function Trip() {
@@ -15,7 +22,7 @@ export default function Trip() {
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
   });
-  
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [tripInfo, setTripInfo] = useState([]);
   const [err, setErr] = useState("");
@@ -29,7 +36,7 @@ export default function Trip() {
     startlongitude1: null,
     endlatitude1: null,
     endlongitude1: null,
-    distancetravalled1: null
+    distancetravalled1: null,
   });
   const [formAnimation, setFormAnimation] = useState("opacity-100");
   const [markers, setMarkers] = useState([]);
@@ -45,7 +52,7 @@ export default function Trip() {
     iconAnchor: [12, 41],
     popupAnchor: [1, -34],
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-    shadowSize: [41, 41]
+    shadowSize: [41, 41],
   });
 
   const MapClickHandler = ({ onMapClick }) => {
@@ -83,9 +90,9 @@ export default function Trip() {
           newMarkers[1].lng
         );
         setdistancetravalled1(dist.toFixed(2));
-        
+
         // Update formData with both markers and distancetravalled1
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           startlatitude1: parseFloat(newMarkers[0].lat.toFixed(2)),
           startlongitude1: parseFloat(newMarkers[0].lng.toFixed(2)),
@@ -96,18 +103,18 @@ export default function Trip() {
         console.log(FormData);
       } else if (newMarkers.length > 2) {
         setdistancetravalled1(null);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           startlatitude1: null,
           startlongitude1: null,
           endlatitude1: null,
           endlongitude1: null,
-          distancetravalled1: null
+          distancetravalled1: null,
         }));
         return [{ lat, lng }];
       } else {
         // Update just the start coordinates when first marker is placed
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           startlatitude1: lat,
           startlongitude1: lng,
@@ -119,12 +126,9 @@ export default function Trip() {
 
   const getTripInfo = async () => {
     try {
-      const response = await fetch(
-        "http://localhost:4000/api/get_all_trips",
-        {
-          method: "GET",
-        }
-      );
+      const response = await fetch("http://localhost:4000/api/get_all_trips", {
+        method: "GET",
+      });
 
       if (!response.ok) {
         throw new Error("Error fetching trip list");
@@ -152,25 +156,26 @@ export default function Trip() {
     setSuccess("");
 
     // Validate that all coordinates and distancetravalled1 are present
-    if (!formData.startlatitude1 || !formData.startlongitude1 || 
-        !formData.endlatitude1 || !formData.endlongitude1 || 
-        !formData.distancetravalled1) {
+    if (
+      !formData.startlatitude1 ||
+      !formData.startlongitude1 ||
+      !formData.endlatitude1 ||
+      !formData.endlongitude1 ||
+      !formData.distancetravalled1
+    ) {
       setErr("Please select both start and end locations on the map");
       return;
     }
 
     try {
       console.log(formData);
-      const response = await fetch(
-        "http://localhost:4000/api/tripregistered",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("http://localhost:4000/api/tripregistered", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -190,12 +195,12 @@ export default function Trip() {
         startlongitude1: null,
         endlatitude1: null,
         endlongitude1: null,
-        distancetravalled1: null
+        distancetravalled1: null,
       });
       setMarkers([]); // Clear markers
       setdistancetravalled1(null); // Reset distancetravalled1
       setSuccess("Trip Added Successfully!");
-      
+
       setTimeout(() => {
         setSuccess(null);
       }, 3000);
@@ -222,67 +227,65 @@ export default function Trip() {
     }, 300);
   };
 
-// Separate RoutingMachine component with better control management
-const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color prop with default value
-  const map = useMap();
-  const [routingControl, setRoutingControl] = useState(null);
+  // Separate RoutingMachine component with better control management
+  const RoutingMachine = ({ from, to, color = "#0000ff" }) => {
+    // Added color prop with default value
+    const map = useMap();
+    const [routingControl, setRoutingControl] = useState(null);
 
-  useEffect(() => {
-    if (!map || !from || !to) return;
+    useEffect(() => {
+      if (!map || !from || !to) return;
 
-    try {
-      // Remove existing routing control if it exists
-      if (routingControl) {
-        map.removeControl(routingControl);
-      }
-
-      // Create new routing control with dynamic color
-      const control = L.Routing.control({
-        waypoints: [
-          L.latLng(from[0], from[1]),
-          L.latLng(to[0], to[1])
-        ],
-        routeWhileDragging: false,
-        addWaypoints: false,
-        draggableWaypoints: false,
-        fitSelectedRoutes: false,
-        showAlternatives: false,
-        lineOptions: {
-          styles: [{ color: color, opacity: 0.6, weight: 4 }] // Use dynamic color here
-        },
-        createMarker: () => null // Disable default markers
-      })
-        .on('routingerror', function (e) {
-          console.log('Routing error:', e);
-        })
-        .addTo(map);
-
-      setRoutingControl(control);
-
-      // Cleanup function
-      return () => {
-        if (map && control) {
-          try {
-            control.getPlan().setWaypoints([]);
-            map.removeControl(control);
-            // Clean up any remaining routing layers
-            map.eachLayer((layer) => {
-              if (layer._routing) {
-                map.removeLayer(layer);
-              }
-            });
-          } catch (error) {
-            console.log('Cleanup error:', error);
-          }
+      try {
+        // Remove existing routing control if it exists
+        if (routingControl) {
+          map.removeControl(routingControl);
         }
-      };
-    } catch (error) {
-      console.log('Routing control error:', error);
-    }
-  }, [map, from, to, color]); // Added color to dependency array
 
-  return null;
-};
+        // Create new routing control with dynamic color
+        const control = L.Routing.control({
+          waypoints: [L.latLng(from[0], from[1]), L.latLng(to[0], to[1])],
+          routeWhileDragging: false,
+          addWaypoints: false,
+          draggableWaypoints: false,
+          fitSelectedRoutes: false,
+          showAlternatives: false,
+          lineOptions: {
+            styles: [{ color: color, opacity: 0.6, weight: 4 }], // Use dynamic color here
+          },
+          createMarker: () => null, // Disable default markers
+        })
+          .on("routingerror", function (e) {
+            console.log("Routing error:", e);
+          })
+          .addTo(map);
+
+        setRoutingControl(control);
+
+        // Cleanup function
+        return () => {
+          if (map && control) {
+            try {
+              control.getPlan().setWaypoints([]);
+              map.removeControl(control);
+              // Clean up any remaining routing layers
+              map.eachLayer((layer) => {
+                if (layer._routing) {
+                  map.removeLayer(layer);
+                }
+              });
+            } catch (error) {
+              console.log("Cleanup error:", error);
+            }
+          }
+        };
+      } catch (error) {
+        console.log("Routing control error:", error);
+      }
+    }, [map, from, to, color]); // Added color to dependency array
+
+    return null;
+  };
   console.log(formData.startlatitude1);
   return (
     <div className="bg-gray-900 h-[2000px] w-screen">
@@ -321,11 +324,18 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
               </div>
             </div>
             {isFormOpen && (
-              <div className={`mt-8 bg-gray-800 p-6 rounded-lg shadow-md transition-opacity duration-300 ease-in-out ${formAnimation}`}>
-                <h2 className="text-lg font-semibold text-white mb-4">Add New Trip</h2>
+              <div
+                className={`mt-8 bg-gray-800 p-6 rounded-lg shadow-md transition-opacity duration-300 ease-in-out ${formAnimation}`}
+              >
+                <h2 className="text-lg font-semibold text-white mb-4">
+                  Add New Trip
+                </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="starttime">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="starttime"
+                    >
                       Start Time
                     </label>
                     <input
@@ -339,7 +349,10 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-300" htmlFor="endtime">
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="endtime"
+                    >
                       End Time
                     </label>
                     <input
@@ -354,14 +367,22 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
                   </div>
                   <div>
                     <h2 className="text-center text-xl font-bold mt-4 mb-4 text-white">
-                      {distancetravalled1 ? `distancetravalled1: ${distancetravalled1} km` : "Click two points to calculate distancetravalled1"}
+                      {distancetravalled1
+                        ? `distancetravalled1: ${distancetravalled1} km`
+                        : "Click two points to calculate distancetravalled1"}
                     </h2>
                     <div className="text-sm text-gray-300 mb-4">
                       {formData.startlatitude1 && formData.startlongitude1 && (
-                        <div>Start: ({formData.startlatitude1.toFixed(5)}, {formData.startlongitude1.toFixed(5)})</div>
+                        <div>
+                          Start: ({formData.startlatitude1.toFixed(5)},{" "}
+                          {formData.startlongitude1.toFixed(5)})
+                        </div>
                       )}
                       {formData.endlatitude1 && formData.endlongitude1 && (
-                        <div>End: ({formData.endlatitude1.toFixed(5)}, {formData.endlongitude1.toFixed(5)})</div>
+                        <div>
+                          End: ({formData.endlatitude1.toFixed(5)},{" "}
+                          {formData.endlongitude1.toFixed(5)})
+                        </div>
                       )}
                     </div>
                     <MapContainer
@@ -375,10 +396,16 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
                       />
                       <MapClickHandler onMapClick={handleMapClick} />
                       {markers.map((marker, index) => (
-                        <Marker key={index} position={[marker.lat, marker.lng]} icon={customIcon}>
+                        <Marker
+                          key={index}
+                          position={[marker.lat, marker.lng]}
+                          icon={customIcon}
+                        >
                           <Popup>
-                            {index === 0 ? "Start Location" : "End Location"}<br />
-                            Latitude: {marker.lat.toFixed(5)}<br />
+                            {index === 0 ? "Start Location" : "End Location"}
+                            <br />
+                            Latitude: {marker.lat.toFixed(5)}
+                            <br />
                             Longitude: {marker.lng.toFixed(5)}
                           </Popup>
                         </Marker>
@@ -403,175 +430,190 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
                 </form>
               </div>
             )}
-              <div className="mt-8 flow-root">
-                <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                  <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                    <table className="min-w-full divide-y divide-gray-700">
-                      <thead>
-                        <tr>
+            <div className="mt-8 flow-root">
+              <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                  <table className="min-w-full divide-y divide-gray-700">
+                    <thead>
+                      <tr>
                         <th
-                            scope="col"
-                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
-                          >
-                            Driver
-                          </th>
-                          <th
-                            scope="col"
-                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
-                          >
-                            Vehicle
-                          </th>
-                          <th
-                            scope="col"
-                            className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
-                          >
-                            Start Latitude
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            Start Longitude
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            End Latitude
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            End Longitude
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            StartTime
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            EndTime
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            distanceTravalled
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                          >
-                            Status
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-800">
-                        {tripInfo && tripInfo.length > 0 ? (
-                          tripInfo.map((trip, index) => (
-                            <tr key={index}>
-                              <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
-                                {trip.name}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.registrationnumber}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.startlatitude}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.startlongitude}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.endlongitude}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.endlatitude}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.starttime}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.endtime}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.distancetravelled}
-                              </td>
-                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                                {trip.tripstatus}
-                              </td>
-                            </tr>
-                          ))
-                        ) : (
-                          <tr>
-                            <td
-                              colSpan={4}
-                              className="text-center text-white py-4"
-                            >
-                              No Trips Found
+                          scope="col"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                        >
+                          Driver
+                        </th>
+                        <th
+                          scope="col"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                        >
+                          Vehicle
+                        </th>
+                        <th
+                          scope="col"
+                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
+                        >
+                          Start Latitude
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Start Longitude
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          End Latitude
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          End Longitude
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          StartTime
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          EndTime
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          distanceTravalled
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-800">
+                      {tripInfo && tripInfo.length > 0 ? (
+                        tripInfo.map((trip, index) => (
+                          <tr key={index}>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">
+                              {trip.name}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.registrationnumber}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.startlatitude}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.startlongitude}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.endlongitude}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.endlatitude}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.starttime}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.endtime}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300 text-center">
+                              {trip.distancetravelled}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {trip.tripstatus}
                             </td>
                           </tr>
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
+                        ))
+                      ) : (
+                        <tr>
+                          <td
+                            colSpan={4}
+                            className="text-center text-white py-4"
+                          >
+                            No Trips Found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
-                // Replace the final MapContainer section with this corrected version:
-            <MapContainer 
-                className="w-full max-w-4xl h-96 rounded-lg shadow-md" 
-                center={[12.9716, 77.5946]} 
-                zoom={8}
-                key={tripInfo.length} // Force re-render when trips change
-              > 
-                <TileLayer 
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
-                /> 
-                {tripInfo.map((trip, index) => {
-                  const pathColors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FF8C00']; // List of colors
-                  const color = pathColors[index % pathColors.length]; // Cycle through colors
-
-                  return trip.startlatitude && trip.startlongitude && trip.endlatitude && trip.endlongitude && (
-                    <React.Fragment key={index}>
-                      <Marker 
-                        position={[trip.startlatitude, trip.startlongitude]} 
-                        icon={customIcon}
-                      > 
-                        <Popup> 
-                          Trip Start Point<br/>
-                          Start: {trip.startlatitude}, {trip.startlongitude}<br/>
-                          Distance: {trip.distancetravelled} km
-                        </Popup> 
-                      </Marker>
-                      <Marker 
-                        position={[trip.endlatitude, trip.endlongitude]} 
-                        icon={customIcon}
-                      > 
-                        <Popup> 
-                          Trip End Point<br/>
-                          End: {trip.endlatitude}, {trip.endlongitude}<br/>
-                          Distance: {trip.distancetravelled} km
-                        </Popup> 
-                      </Marker>
-                      <RoutingMachine 
-                        from={[trip.startlatitude, trip.startlongitude]}
-                        to={[trip.endlatitude, trip.endlongitude]}
-                        color={color} // Pass the unique color for this route
-                      />
-                    </React.Fragment>
-                  );
-                })}
-              </MapContainer>
           </div>
+          // Replace the final MapContainer section with this corrected version:
+          <MapContainer
+            className="w-full max-w-4xl h-96 rounded-lg shadow-md"
+            center={[12.9716, 77.5946]}
+            zoom={8}
+            key={tripInfo.length} // Force re-render when trips change
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            {tripInfo.map((trip, index) => {
+              const pathColors = [
+                "#FF5733",
+                "#33FF57",
+                "#3357FF",
+                "#FF33A1",
+                "#FF8C00",
+              ]; // List of colors
+              const color = pathColors[index % pathColors.length]; // Cycle through colors
+
+              return (
+                trip.startlatitude &&
+                trip.startlongitude &&
+                trip.endlatitude &&
+                trip.endlongitude && (
+                  <React.Fragment key={index}>
+                    <Marker
+                      position={[trip.startlatitude, trip.startlongitude]}
+                      icon={customIcon}
+                    >
+                      <Popup>
+                        Trip Start Point
+                        <br />
+                        Start: {trip.startlatitude}, {trip.startlongitude}
+                        <br />
+                        Distance: {trip.distancetravelled} km
+                      </Popup>
+                    </Marker>
+                    <Marker
+                      position={[trip.endlatitude, trip.endlongitude]}
+                      icon={customIcon}
+                    >
+                      <Popup>
+                        Trip End Point
+                        <br />
+                        End: {trip.endlatitude}, {trip.endlongitude}
+                        <br />
+                        Distance: {trip.distancetravelled} km
+                      </Popup>
+                    </Marker>
+                    <RoutingMachine
+                      from={[trip.startlatitude, trip.startlongitude]}
+                      to={[trip.endlatitude, trip.endlongitude]}
+                      color={color} // Pass the unique color for this route
+                    />
+                  </React.Fragment>
+                )
+              );
+            })}
+          </MapContainer>
         </div>
-        <Footer />
       </div>
-    );
-};
+      <Footer />
+    </div>
+  );
+}
