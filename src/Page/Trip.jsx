@@ -223,7 +223,7 @@ export default function Trip() {
   };
 
 // Separate RoutingMachine component with better control management
-const RoutingMachine = ({ from, to }) => {
+const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color prop with default value
   const map = useMap();
   const [routingControl, setRoutingControl] = useState(null);
 
@@ -236,7 +236,7 @@ const RoutingMachine = ({ from, to }) => {
         map.removeControl(routingControl);
       }
 
-      // Create new routing control with error handling
+      // Create new routing control with dynamic color
       const control = L.Routing.control({
         waypoints: [
           L.latLng(from[0], from[1]),
@@ -248,11 +248,11 @@ const RoutingMachine = ({ from, to }) => {
         fitSelectedRoutes: false,
         showAlternatives: false,
         lineOptions: {
-          styles: [{ color: '#0000ff', opacity: 0.6, weight: 4 }]
+          styles: [{ color: color, opacity: 0.6, weight: 4 }] // Use dynamic color here
         },
         createMarker: () => null // Disable default markers
       })
-        .on('routingerror', function(e) {
+        .on('routingerror', function (e) {
           console.log('Routing error:', e);
         })
         .addTo(map);
@@ -279,7 +279,7 @@ const RoutingMachine = ({ from, to }) => {
     } catch (error) {
       console.log('Routing control error:', error);
     }
-  }, [map, from, to]);
+  }, [map, from, to, color]); // Added color to dependency array
 
   return null;
 };
@@ -525,46 +525,50 @@ const RoutingMachine = ({ from, to }) => {
             </div>
                 // Replace the final MapContainer section with this corrected version:
             <MapContainer 
-      className="w-full max-w-4xl h-96 rounded-lg shadow-md" 
-      center={[12.9716, 77.5946]} 
-      zoom={8}
-      key={tripInfo.length} // Force re-render when trips change
-    > 
-      <TileLayer 
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
-      /> 
-      {tripInfo.map((trip, index) => (
-        trip.startlatitude && trip.startlongitude && trip.endlatitude && trip.endlongitude && (
-          <React.Fragment key={index}>
-            <Marker 
-              position={[trip.startlatitude, trip.startlongitude]} 
-              icon={customIcon}
-            > 
-              <Popup> 
-                Trip Start Point<br/>
-                Start: {trip.startlatitude}, {trip.startlongitude}<br/>
-                Distance: {trip.distancetravelled} km
-              </Popup> 
-            </Marker>
-            <Marker 
-              position={[trip.endlatitude, trip.endlongitude]} 
-              icon={customIcon}
-            > 
-              <Popup> 
-                Trip End Point<br/>
-                End: {trip.endlatitude}, {trip.endlongitude}<br/>
-                Distance: {trip.distancetravelled} km
-              </Popup> 
-            </Marker>
-            <RoutingMachine 
-              from={[trip.startlatitude, trip.startlongitude]}
-              to={[trip.endlatitude, trip.endlongitude]}
-            />
-          </React.Fragment>
-        )
-      ))}
-    </MapContainer>
+                className="w-full max-w-4xl h-96 rounded-lg shadow-md" 
+                center={[12.9716, 77.5946]} 
+                zoom={8}
+                key={tripInfo.length} // Force re-render when trips change
+              > 
+                <TileLayer 
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
+                /> 
+                {tripInfo.map((trip, index) => {
+                  const pathColors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A1', '#FF8C00']; // List of colors
+                  const color = pathColors[index % pathColors.length]; // Cycle through colors
+
+                  return trip.startlatitude && trip.startlongitude && trip.endlatitude && trip.endlongitude && (
+                    <React.Fragment key={index}>
+                      <Marker 
+                        position={[trip.startlatitude, trip.startlongitude]} 
+                        icon={customIcon}
+                      > 
+                        <Popup> 
+                          Trip Start Point<br/>
+                          Start: {trip.startlatitude}, {trip.startlongitude}<br/>
+                          Distance: {trip.distancetravelled} km
+                        </Popup> 
+                      </Marker>
+                      <Marker 
+                        position={[trip.endlatitude, trip.endlongitude]} 
+                        icon={customIcon}
+                      > 
+                        <Popup> 
+                          Trip End Point<br/>
+                          End: {trip.endlatitude}, {trip.endlongitude}<br/>
+                          Distance: {trip.distancetravelled} km
+                        </Popup> 
+                      </Marker>
+                      <RoutingMachine 
+                        from={[trip.startlatitude, trip.startlongitude]}
+                        to={[trip.endlatitude, trip.endlongitude]}
+                        color={color} // Pass the unique color for this route
+                      />
+                    </React.Fragment>
+                  );
+                })}
+              </MapContainer>
           </div>
         </div>
         <Footer />
