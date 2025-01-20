@@ -1,9 +1,11 @@
 import React from "react";
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import 'leaflet-routing-machine';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 import { useState, useEffect } from "react";
 
 export default function Trip() {
@@ -39,9 +41,11 @@ export default function Trip() {
 
   const customIcon = new L.Icon({
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    iconSize: [35, 45],
-    iconAnchor: [17, 45],
-    popupAnchor: [0, -40],
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+    shadowSize: [41, 41]
   });
 
   const MapClickHandler = ({ onMapClick }) => {
@@ -217,6 +221,68 @@ export default function Trip() {
       setFormAnimation("opacity-100");
     }, 300);
   };
+
+// Separate RoutingMachine component with better control management
+const RoutingMachine = ({ from, to }) => {
+  const map = useMap();
+  const [routingControl, setRoutingControl] = useState(null);
+
+  useEffect(() => {
+    if (!map || !from || !to) return;
+
+    try {
+      // Remove existing routing control if it exists
+      if (routingControl) {
+        map.removeControl(routingControl);
+      }
+
+      // Create new routing control with error handling
+      const control = L.Routing.control({
+        waypoints: [
+          L.latLng(from[0], from[1]),
+          L.latLng(to[0], to[1])
+        ],
+        routeWhileDragging: false,
+        addWaypoints: false,
+        draggableWaypoints: false,
+        fitSelectedRoutes: false,
+        showAlternatives: false,
+        lineOptions: {
+          styles: [{ color: '#0000ff', opacity: 0.6, weight: 4 }]
+        },
+        createMarker: () => null // Disable default markers
+      })
+        .on('routingerror', function(e) {
+          console.log('Routing error:', e);
+        })
+        .addTo(map);
+
+      setRoutingControl(control);
+
+      // Cleanup function
+      return () => {
+        if (map && control) {
+          try {
+            control.getPlan().setWaypoints([]);
+            map.removeControl(control);
+            // Clean up any remaining routing layers
+            map.eachLayer((layer) => {
+              if (layer._routing) {
+                map.removeLayer(layer);
+              }
+            });
+          } catch (error) {
+            console.log('Cleanup error:', error);
+          }
+        }
+      };
+    } catch (error) {
+      console.log('Routing control error:', error);
+    }
+  }, [map, from, to]);
+
+  return null;
+};
   console.log(formData.startlatitude1);
   return (
     <div className="bg-gray-900 h-[2000px] w-screen">
@@ -457,6 +523,48 @@ export default function Trip() {
                 </div>
               </div>
             </div>
+                // Replace the final MapContainer section with this corrected version:
+            <MapContainer 
+      className="w-full max-w-4xl h-96 rounded-lg shadow-md" 
+      center={[12.9716, 77.5946]} 
+      zoom={8}
+      key={tripInfo.length} // Force re-render when trips change
+    > 
+      <TileLayer 
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
+      /> 
+      {tripInfo.map((trip, index) => (
+        trip.startlatitude && trip.startlongitude && trip.endlatitude && trip.endlongitude && (
+          <React.Fragment key={index}>
+            <Marker 
+              position={[trip.startlatitude, trip.startlongitude]} 
+              icon={customIcon}
+            > 
+              <Popup> 
+                Trip Start Point<br/>
+                Start: {trip.startlatitude}, {trip.startlongitude}<br/>
+                Distance: {trip.distancetravelled} km
+              </Popup> 
+            </Marker>
+            <Marker 
+              position={[trip.endlatitude, trip.endlongitude]} 
+              icon={customIcon}
+            > 
+              <Popup> 
+                Trip End Point<br/>
+                End: {trip.endlatitude}, {trip.endlongitude}<br/>
+                Distance: {trip.distancetravelled} km
+              </Popup> 
+            </Marker>
+            <RoutingMachine 
+              from={[trip.startlatitude, trip.startlongitude]}
+              to={[trip.endlatitude, trip.endlongitude]}
+            />
+          </React.Fragment>
+        )
+      ))}
+    </MapContainer>
           </div>
         </div>
         <Footer />
