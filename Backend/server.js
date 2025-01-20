@@ -346,7 +346,13 @@ app.get("/api/get_all_drivers", async (req, res) => {
     });
   }
 });
-
+// api endpoint for editing the trips table
+// app.put("/api/delete_trips",async(req,res)=>{
+//   const query = `DELETE FROM Trips
+//               WHERE tripID = $1;
+//             `;
+//   const result = await con.query(query,[])
+// })
 //api for getting all vehicles
 app.get("/api/get_all_vehicles", async (req, res) => {
   try {
@@ -513,7 +519,8 @@ app.get("/api/get_all_trips", async (req, res) => {
         Trips.StartTime,
         Trips.EndTime,
         Trips.DistanceTravelled,
-        Trips.TripStatus
+        Trips.TripStatus,
+        Trips.revenue
       FROM Trips
       INNER JOIN Drivers ON Trips.driverid = Drivers.driverid
       INNER JOIN Vehicles ON Trips.vehicleid = Vehicles.vehicleid
@@ -544,7 +551,48 @@ app.get("/api/get_active_vehicle", async (req, res) => {
     res.status(500).json({ error: "error in fetching active vehicles" });
   }
 });
-
+//api endpoint for getting all the maintenance record
+app.get("/api/get_maintenance",async (req,res)=>{
+  try{
+    const query = `SELECT * FROM maintenancerecords WHERE userid= $1`;
+    const result = await con.query(query,[userid]);
+    console.log("Result :",result.rows);
+    res.json(result.rows);
+  }catch(error){
+    console.error({error:"Error in getting the maintainance record"});
+    res.status(500).json({error:"Error fetching in maintainance record"});
+  }
+})
+//api endpoint for posting all the maintenance record
+app.post("/api/maintenanceregister",async(req,res)=>{
+  try {
+    const {vehicleid,maintenancetype,cost,maintenancedate,remarks} = req.body;
+    if(!vehicleid || !maintenancetype || !cost || !maintenancedate || !remarks){
+      res.status(400).json({error:"Please fill all the details"});
+    }
+    
+    const query = `
+    INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,nextduedate,remarks)
+    VALUES ($1,$2,$3,$4,$5,$6,$7)
+    RETURNING recordid
+    `;
+    const nextduedate = null;
+    const result = await con.query(query,[
+      userid,
+      vehicleid,
+      maintenancetype,
+      cost,
+      maintenancedate,
+      nextduedate,
+      remarks
+    ]);
+    console.log(result.rows[0].recordid);
+    res.json(result.rows[0].recordid);
+  } catch (error) {
+      console.error({error:"Error in posting the record"});
+      res.status(400).json({error:"Error in posting the record"});
+  }
+})
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });

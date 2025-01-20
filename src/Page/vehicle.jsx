@@ -14,10 +14,18 @@ import {
 export default function Vehicle() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [vehicleInfo, setVehicleInfo] = useState([]);
+  const [status, setStatus] = useState("Active");
   const [err, setErr] = useState("");
   const [success, setSuccess] = useState("");
   const [latitude, setLatitude] = useState(); 
   const [longitude, setLongitude] = useState();
+  const [maintenanceform,setMaintenanceform] = useState({
+      vehicleid: null,
+      maintenancetype:"",
+      cost:null,
+      maintenancedate:null,
+      remarks:"",
+  });
   const [formData, setFormData] = useState({
     make: "",
     registrationnumber: "",
@@ -76,7 +84,19 @@ export default function Vehicle() {
       console.error("Failed to fetch vehicles:", error.message);
     }
   };
-
+  const handlemaintenancechange = (e) => {
+    const { name, value } = e.target;
+    setMaintenanceform((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+  const handleClick = (e) => {
+    maintenanceform.vehicleid=e.target.value;
+    if(status==="Active"){
+      setStatus("Inactive");
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -84,7 +104,51 @@ export default function Vehicle() {
       [name]: value,
     }));
   };
+  const handlesubmit2 = async (e) => {
+    e.preventDefault();
+    setErr("");
+    setSuccess("");
 
+    try {
+      const response = await fetch(
+        "http://localhost:4000/api/maintenanceregister",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(maintenanceform),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error registering maintenance record");
+      }
+
+      const result = await response.json();
+      console.log("Maintenance record registered successfully:", result);
+
+      setMaintenanceform({
+        vehicleid: null,
+        maintenancetype: "",
+        cost: "",
+        maintenancedate: "",
+        remarks: "",
+      });
+
+      setSuccess("Maintenance added Successfully!");
+      setTimeout(() => setSuccess(null), 3000);
+      setStatus("Active");
+    } catch (error) {
+      console.error("Error submitting form:", error.message);
+      setErr(error.message || "Failed to add");
+      setTimeout(() => setErr(null), 3000);
+    }
+  };
+  const handleCancel2 = async () =>{
+      setStatus("Active");
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -354,6 +418,12 @@ export default function Vehicle() {
                         >
                           Status
                         </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Maintenance status
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -389,12 +459,109 @@ export default function Vehicle() {
                                 {vehicle.status}
                               </span>
                             </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              <button
+                                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                                onClick={() => handleClick(vehicle.vehicleid)}
+                              >
+                                Maintenance
+                              </button>
+                              {status === "Inactive" && maintenanceform.vehicleid === vehicle.vehicleid && (
+                                <form onSubmit={handlesubmit2} className="space-y-4 mt-4">
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="maitenancetype"
+                                >
+                                  Maitenancetype
+                                </label>
+                                <input
+                                  type="text"
+                                  id="maintenancetype"
+                                  name="maintenancetype"
+                                  value={maintenanceform.maintenancetype}
+                                  onChange={handlemaintenancechange}
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="cost"
+                                >
+                                  Cost
+                                </label>
+                                <input
+                                  type="text"
+                                  id="cost"
+                                  name="cost"
+                                  value={maintenanceform.cost}
+                                  onChange={handlemaintenancechange}
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="maintenancedate"
+                                >
+                                  Maintenance Date
+                                </label>
+                                <input
+                                  type="text"
+                                  id="maintenancedate"
+                                  name="maintenancedate"
+                                  value={maintenanceform.maintenancedate}
+                                  onChange={handlemaintenancechange}
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="remarks"
+                                >
+                                  remarks
+                                </label>
+                                <input
+                                  type="text"
+                                  id="remarks"
+                                  name="remarks"
+                                  value={maintenanceform.remarks}
+                                  onChange={handlemaintenancechange}
+                            
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              
+                               <div className="flex items-center justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={handleCancel2}
+                                      className="mr-4 px-4 py-2 bg-gray-600 text-sm font-medium text-white rounded-md hover:bg-gray-500"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="submit"
+                                      className="px-4 py-2 bg-indigo-500 text-sm font-medium text-white rounded-md hover:bg-indigo-400"
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
+                                </form>
+                              )}
+                            </td>
                           </tr>
                         ))
-                      ) : (
+                            ) : (
                         <tr>
                           <td
-                            colSpan={4}
+                            colSpan={8}
                             className="text-center text-white py-4"
                           >
                             No Vehicles Found

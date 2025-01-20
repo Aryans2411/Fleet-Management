@@ -57,7 +57,7 @@ export default function Trip() {
     });
     return null;
   };
-
+  // haversian distance formula
   const calculatedistancetravalled1 = (lat1, lon1, lat2, lon2) => {
     const R = 6371;
     const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -242,9 +242,9 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
           L.latLng(from[0], from[1]),
           L.latLng(to[0], to[1])
         ],
-        routeWhileDragging: false,
-        addWaypoints: false,
-        draggableWaypoints: false,
+        routeWhileDragging: true,
+        addWaypoints: true,
+        draggableWaypoints: true,
         fitSelectedRoutes: false,
         showAlternatives: false,
         lineOptions: {
@@ -469,6 +469,12 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
                           >
                             Status
                           </th>
+                          <th
+                            scope="col"
+                            className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                          >
+                            Revenue
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-800">
@@ -504,6 +510,9 @@ const RoutingMachine = ({ from, to, color = '#0000ff' }) => { // Added color pro
                               </td>
                               <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                                 {trip.tripstatus}
+                              </td>
+                              <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                                {trip.revenue}
                               </td>
                             </tr>
                           ))

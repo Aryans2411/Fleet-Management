@@ -56,3 +56,20 @@ CREATE TABLE Trips (
 --  for modifying vehicles table to inactive the default status
 ALTER TABLE Vehicles
 ALTER COLUMN status SET DEFAULT 'Inactive';
+-- for modifying trips table to add revenue generated in each trip
+ALTER TABLE trips
+ADD COLUMN revenue NUMERIC(15,2)
+
+-- maintainance table
+CREATE TABLE MaintenanceRecords (
+    recordid SERIAL PRIMARY KEY,
+	userid VARCHAR(100), 
+    vehicleid INT, -- Foreign key to Vehicles table
+    maintenancetype VARCHAR(100), -- e.g., Oil Change, Tire Replacement
+    cost DECIMAL(10,2),
+    maintenancedate DATE,
+    nextduedate DATE,
+    remarks TEXT,
+    FOREIGN KEY (vehicleid) REFERENCES Vehicles(vehicleid),
+	FOREIGN KEY (userid) REFERENCES users(userid)
+);
