@@ -91,12 +91,14 @@ export default function Vehicle() {
       [name]: value,
     }));
   };
+  //for maintenance form
   const handleClick = (vehicleid) => {
     maintenanceform.vehicleid = vehicleid;
     if (status === "Active") {
       setStatus("Inactive");
     }
   };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -104,6 +106,7 @@ export default function Vehicle() {
       [name]: value,
     }));
   };
+
   const handlesubmit2 = async (e) => {
     e.preventDefault();
     setErr("");
@@ -458,6 +461,8 @@ export default function Vehicle() {
                                 className={
                                   vehicle.status === "Inactive"
                                     ? "text-green-400"
+                                    : vehicle.status === "Under Maintenance"
+                                    ? "text-red-500"
                                     : "text-yellow-400"
                                 }
                               >
@@ -472,6 +477,7 @@ export default function Vehicle() {
                                 Maintenance
                               </button>
                               {status === "Inactive" &&
+                                // vehicle.status !== "Active" &&
                                 maintenanceform.vehicleid ===
                                   vehicle.vehicleid && (
                                   <form

@@ -1,13 +1,13 @@
 import { Disclosure, Menu } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
-import { Link } from "react-router-dom"; // Use Link from react-router-dom for navigation
+import { Link, useLocation } from "react-router-dom"; // Use Link and useLocation for navigation and current path detection
 
 const initialNavigation = [
   { name: "Home", href: "/home", key: "home" },
   { name: "Vehicle", href: "/vehicle", key: "vehicle" },
   { name: "Driver", href: "/driver", key: "driver" },
   { name: "Analytics", href: "/analytics", key: "analytics" },
-  { name: "Trip", href:"/trip", key:"trip"}
+  { name: "Trip", href: "/trip", key: "trip" },
 ];
 
 function classNames(...classes) {
@@ -15,6 +15,8 @@ function classNames(...classes) {
 }
 
 export default function Navigation() {
+  const location = useLocation(); // Get the current path
+
   return (
     <Disclosure as="nav" className="bg-gray-800">
       <div className="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
@@ -48,7 +50,9 @@ export default function Navigation() {
                     key={item.key}
                     to={item.href}
                     className={classNames(
-                      "text-gray-300 hover:bg-gray-700 hover:text-white", // No active styling
+                      location.pathname === item.href
+                        ? "bg-gray-900 text-white" // Active link styling
+                        : "text-gray-300 hover:bg-gray-700 hover:text-white",
                       "rounded-md px-3 py-2 text-sm font-medium"
                     )}
                   >
@@ -59,15 +63,6 @@ export default function Navigation() {
             </div>
           </div>
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-            {/* Commented out the bell icon section */}
-            {/* <button
-              type="button"
-              className="relative rounded-full bg-gray-800 p-1 text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800"
-            >
-              <span className="sr-only">View notifications</span>
-              <BellIcon aria-hidden="true" className="h-6 w-6" />
-            </button> */}
-
             {/* Profile dropdown */}
             <Menu as="div" className="relative ml-3">
               <div>
@@ -131,10 +126,12 @@ export default function Navigation() {
           {initialNavigation.map((item) => (
             <Disclosure.Button
               key={item.key}
-              as="a"
-              href={item.href}
+              as={Link}
+              to={item.href}
               className={classNames(
-                "text-gray-300 hover:bg-gray-700 hover:text-white", // No active styling
+                location.pathname === item.href
+                  ? "bg-gray-900 text-white" // Active link styling
+                  : "text-gray-300 hover:bg-gray-700 hover:text-white",
                 "block rounded-md px-3 py-2 text-base font-medium"
               )}
             >

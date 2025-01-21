@@ -5,6 +5,7 @@ export default function Home() {
   const [driversFreq, setDriverFreq] = useState(0);
   const [vehiclesFreq, setVehicleFreq] = useState(0);
   const [actvvehicle, setActvehicle] = useState(0);
+  const [maintv, setmainv] = useState(0);
 
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
@@ -21,6 +22,7 @@ export default function Home() {
     drivernumber();
     vehiclesnumber();
     actvehicle();
+    maintenance_vehicle();
   }, []);
 
   const drivernumber = async () => {
@@ -72,6 +74,26 @@ export default function Home() {
 
       const data = await response.json();
       setActvehicle(data);
+      // console.log("total vehicles", vehiclesFreq);
+      // console.log("active vehicle", actvvehicle);
+    } catch (error) {
+      console.error("Failed to fetch active vehicles", error);
+    }
+  };
+
+  const maintenance_vehicle = async () => {
+    try {
+      const response = await fetch(
+        "http://localhost:4000/api/get_total_maintenance_vehicles",
+        {
+          method: "GET",
+        }
+      );
+      if (!response.ok)
+        throw new Error("Error in fetching total active vehicles");
+
+      const data = await response.json();
+      setmainv(data);
       console.log("total vehicles", vehiclesFreq);
       console.log("active vehicle", actvvehicle);
     } catch (error) {
@@ -124,16 +146,14 @@ export default function Home() {
             <h3 className="text-xl font-semibold mb-2">
               Vehicles in Maintenance
             </h3>
-            <p className="text-3xl font-bold text-orange-400">
-              {dashboardData.vehiclesInMaintenance}
-            </p>
+            <p className="text-3xl font-bold text-orange-400">{maintv}</p>
           </div>
         </div>
         <div className="card">
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Unused Vehicles</h3>
             <p className="text-3xl font-bold text-purple-400">
-              {vehiclesFreq - actvvehicle}
+              {vehiclesFreq - actvvehicle - maintv}
             </p>
           </div>
         </div>
