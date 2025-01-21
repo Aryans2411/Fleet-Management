@@ -17,16 +17,15 @@ export default function Vehicle() {
   const [status, setStatus] = useState("Active");
   const [err, setErr] = useState("");
   const [success, setSuccess] = useState("");
-  const [latitude, setLatitude] = useState();
+  const [latitude, setLatitude] = useState(); 
   const [longitude, setLongitude] = useState();
-  const [maintenanceform, setMaintenanceform] = useState({
-    vehicleid: null,
-    maintenancetype: "",
-    cost: null,
-    maintenancedate: null,
-    remarks: "",
+  const [maintenanceform,setMaintenanceform] = useState({
+      vehicleid: null,
+      maintenancetype:"",
+      cost:null,
+      maintenancedate:null,
+      remarks:"",
   });
-
   const [formData, setFormData] = useState({
     make: "",
     registrationnumber: "",
@@ -41,11 +40,11 @@ export default function Vehicle() {
     getVehicleInfo();
   }, []);
   const customIcon = new L.Icon({
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    iconSize: [35, 45],
-    iconAnchor: [17, 45],
-    popupAnchor: [0, -40],
-  });
+      iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+      iconSize: [35, 45],
+      iconAnchor: [17, 45],
+      popupAnchor: [0, -40],
+    });
   const LocationMarker = () => {
     const [markerPosition, setMarkerPosition] = useState(null);
 
@@ -92,9 +91,9 @@ export default function Vehicle() {
       [name]: value,
     }));
   };
-  const handleClick = (vehicleid) => {
-    maintenanceform.vehicleid = vehicleid;
-    if (status === "Active") {
+  const handleClick = (e) => {
+    maintenanceform.vehicleid=e.target.value;
+    if(status==="Active"){
       setStatus("Inactive");
     }
   };
@@ -124,9 +123,7 @@ export default function Vehicle() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(
-          errorData.error || "Error registering maintenance record"
-        );
+        throw new Error(errorData.error || "Error registering maintenance record");
       }
 
       const result = await response.json();
@@ -149,9 +146,9 @@ export default function Vehicle() {
       setTimeout(() => setErr(null), 3000);
     }
   };
-  const handleCancel2 = async () => {
-    setStatus("Active");
-  };
+  const handleCancel2 = async () =>{
+      setStatus("Active");
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErr("");
@@ -345,10 +342,7 @@ export default function Vehicle() {
                           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                         />
                         {latitude && longitude && (
-                          <Marker
-                            position={[latitude, longitude]}
-                            icon={customIcon}
-                          >
+                          <Marker position={[latitude, longitude]} icon={customIcon}>
                             <Popup>
                               Latitude: {latitude}, Longitude: {longitude}
                             </Popup>
@@ -472,103 +466,99 @@ export default function Vehicle() {
                               >
                                 Maintenance
                               </button>
-                              {isFormVisible && (
-                                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 transition-opacity duration-300">
-                                  <form
-                                    onSubmit={handlesubmit2}
-                                    className="space-y-4 bg-gray-800 p-8 rounded-lg shadow-lg w-full max-w-lg transition-all transform duration-500"
-                                  >
-                                    <div>
-                                      <label
-                                        className="block text-sm font-medium text-gray-300"
-                                        htmlFor="maintenancetype"
-                                      >
-                                        Maitenancetype
-                                      </label>
-                                      <input
-                                        type="text"
-                                        id="maintenancetype"
-                                        name="maintenancetype"
-                                        value={maintenanceform.maintenancetype}
-                                        onChange={handlemaintenancechange}
-                                        className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                                        required
-                                      />
-                                    </div>
-                                    <div>
-                                      <label
-                                        className="block text-sm font-medium text-gray-300"
-                                        htmlFor="cost"
-                                      >
-                                        Cost
-                                      </label>
-                                      <input
-                                        type="text"
-                                        id="cost"
-                                        name="cost"
-                                        value={maintenanceform.cost}
-                                        onChange={handlemaintenancechange}
-                                        className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                                        required
-                                      />
-                                    </div>
-                                    <div>
-                                      <label
-                                        className="block text-sm font-medium text-gray-300"
-                                        htmlFor="maintenancedate"
-                                      >
-                                        Maintenance Date
-                                      </label>
-                                      <input
-                                        type="text"
-                                        id="maintenancedate"
-                                        name="maintenancedate"
-                                        value={maintenanceform.maintenancedate}
-                                        onChange={handlemaintenancechange}
-                                        className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                                        required
-                                      />
-                                    </div>
-                                    <div>
-                                      <label
-                                        className="block text-sm font-medium text-gray-300"
-                                        htmlFor="remarks"
-                                      >
-                                        Remarks
-                                      </label>
-                                      <input
-                                        type="text"
-                                        id="remarks"
-                                        name="remarks"
-                                        value={maintenanceform.remarks}
-                                        onChange={handlemaintenancechange}
-                                        className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                                        required
-                                      />
-                                    </div>
-
-                                    <div className="flex items-center justify-end">
-                                      <button
-                                        type="button"
-                                        onClick={handleCancel2}
-                                        className="mr-4 px-4 py-2 bg-gray-600 text-sm font-medium text-white rounded-md hover:bg-gray-500"
-                                      >
-                                        Cancel
-                                      </button>
-                                      <button
-                                        type="submit"
-                                        className="px-4 py-2 bg-indigo-500 text-sm font-medium text-white rounded-md hover:bg-indigo-400"
-                                      >
-                                        Save
-                                      </button>
-                                    </div>
-                                  </form>
-                                </div>
+                              {status === "Inactive" && maintenanceform.vehicleid === vehicle.vehicleid && (
+                                <form onSubmit={handlesubmit2} className="space-y-4 mt-4">
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="maitenancetype"
+                                >
+                                  Maitenancetype
+                                </label>
+                                <input
+                                  type="text"
+                                  id="maintenancetype"
+                                  name="maintenancetype"
+                                  value={maintenanceform.maintenancetype}
+                                  onChange={handlemaintenancechange}
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="cost"
+                                >
+                                  Cost
+                                </label>
+                                <input
+                                  type="text"
+                                  id="cost"
+                                  name="cost"
+                                  value={maintenanceform.cost}
+                                  onChange={handlemaintenancechange}
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="maintenancedate"
+                                >
+                                  Maintenance Date
+                                </label>
+                                <input
+                                  type="text"
+                                  id="maintenancedate"
+                                  name="maintenancedate"
+                                  value={maintenanceform.maintenancedate}
+                                  onChange={handlemaintenancechange}
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label
+                                  className="block text-sm font-medium text-gray-300"
+                                  htmlFor="remarks"
+                                >
+                                  remarks
+                                </label>
+                                <input
+                                  type="text"
+                                  id="remarks"
+                                  name="remarks"
+                                  value={maintenanceform.remarks}
+                                  onChange={handlemaintenancechange}
+                            
+                                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
+                                  required
+                                />
+                              </div>
+                              
+                               <div className="flex items-center justify-end">
+                                    <button
+                                      type="button"
+                                      onClick={handleCancel2}
+                                      className="mr-4 px-4 py-2 bg-gray-600 text-sm font-medium text-white rounded-md hover:bg-gray-500"
+                                    >
+                                      Cancel
+                                    </button>
+                                    <button
+                                      type="submit"
+                                      className="px-4 py-2 bg-indigo-500 text-sm font-medium text-white rounded-md hover:bg-indigo-400"
+                                    >
+                                      Save
+                                    </button>
+                                  </div>
+                                </form>
                               )}
                             </td>
                           </tr>
                         ))
-                      ) : (
+                            ) : (
                         <tr>
                           <td
                             colSpan={8}
@@ -594,13 +584,16 @@ export default function Vehicle() {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                {vehicleInfo.map((mark, index) => (
-                  <Marker
-                    key={index}
-                    position={[mark.latitude, mark.longitude]}
-                    icon={customIcon}
-                  ></Marker>
-                ))}
+                {vehicleInfo.map((mark, index) => 
+                  
+                    <Marker 
+                      key={index} 
+                      position={[mark.latitude, mark.longitude]} 
+                      icon={customIcon}
+                    >
+                    </Marker>
+                 
+                )}
               </MapContainer>
             </div>
           </div>
