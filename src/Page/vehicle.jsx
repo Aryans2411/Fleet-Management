@@ -441,6 +441,12 @@ export default function Vehicle() {
                         >
                           Maintenance status
                         </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Next Due Date
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -579,6 +585,11 @@ export default function Vehicle() {
                                     </div>
                                   </form>
                                 )}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              {vehicle.nextduedate === null ?(
+                                  vehicle.make
+                              ):(vehicle.vehicleid)}
                             </td>
                           </tr>
                         ))

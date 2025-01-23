@@ -47,7 +47,7 @@ export default function Driver() {
       [name]: value,
     }));
   };
-
+  
   // Form submission handler
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -222,7 +222,7 @@ export default function Driver() {
                       value={formData.earningperkm}
                       onChange={handleInputChange}
                       step={1}
-                      min={100}
+                      min={10}
                       className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       required
                     />

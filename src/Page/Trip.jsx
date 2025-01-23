@@ -577,7 +577,7 @@ export default function Trip() {
             </div>
           </div>
 
-          <MapContainer
+          {/* <MapContainer
             className="w-full max-w-4xl h-96 rounded-lg shadow-md"
             center={[12.9716, 77.5946]}
             zoom={8}
@@ -636,7 +636,7 @@ export default function Trip() {
                 )
               );
             })}
-          </MapContainer>
+          </MapContainer> */}
         </div>
       </div>
       <Footer />

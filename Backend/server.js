@@ -542,7 +542,68 @@ app.get("/api/get_all_trips", async (req, res) => {
     });
   }
 });
-
+app.get("/api/get_totalrevenue",async(req,res)=>{
+  try {
+      const query = `
+          SELECT SUM(revenue) 
+          FROM Trips
+          WHERE userid = $1
+      `;
+      const result = await con.query(query,[userid]);
+      console.log("result",result.rows[0].sum);
+      res.json(Number(result.rows[0].sum));
+  } catch (error) {
+      console.error({error:"Error in fetching the total revenue"});
+      res.status(500).json({error:"Error in fetching the total revenue"});
+  }
+});
+app.get("/api/get_totalcost",async(req,res)=>{
+  try {
+    const petrolprice = 102;
+    const dieselprice = 75;
+    const query1 = `
+    SELECT SUM(cost)
+    FROM maintenancerecords
+    WHERE userid=$1
+    `;
+    const result = await con.query(query1,[userid]);
+    const sum = parseInt(result.rows[0].sum);
+    const query2 = `
+    SELECT 
+    SUM(
+      (t.distancetravelled / v.idealmileage) * 
+      CASE 
+      WHEN v.fueltype = 'Petrol' THEN $1
+      WHEN v.fueltype = 'Diesel' THEN $2
+      ELSE 0
+      END
+      ) AS net_amount
+      FROM trips t
+      JOIN vehicles v ON t.vehicleid = v.vehicleid
+      WHERE v.userid = $3;
+      
+      `;
+      const result2 = await con.query(query2,[petrolprice,dieselprice,userid]);
+      const netamount1 = parseInt(result2.rows[0].net_amount);
+      const query3 = `
+      SELECT 
+      SUM(t.distancetravelled * d.earningperkm) AS net_earning
+      FROM trips t
+      JOIN drivers d ON t.driverid = d.driverid 
+      WHERE d.userid = $1;
+      `
+      const result3 = await con.query(query3,[userid]);
+      const netamount2 = parseInt(result3.rows[0].net_earning);
+      console.log(netamount2);
+      // console.log(netamount1);
+      // console.log("result",result.rows[0].sum,result2.rows[0].net_amount," ",result3.rows[0].net_earning);
+      const cost =(sum + netamount1 + netamount2);
+      res.json(cost);
+  } catch (error) {
+      console.error({error:"Error in fetching the total cost"});
+      res.status(500).json({error:"Error in fetching the total cost"});
+  }
+});
 //API endpoint for getting total active vehicles
 app.get("/api/get_active_vehicle", async (req, res) => {
   try {
@@ -580,25 +641,21 @@ app.post("/api/maintenanceregister", async (req, res) => {
       !maintenancedate ||
       !remarks
     ) {
-      res.status(400).json({ error: "Please fill all the details" });
+       res.status(400).json({ error: "Please fill all the details" });
     }
-
-    const query_check = `SELECT status FROM vehicles where vehicleid=$1 ;`;
-    const result2 = await con.query(query_check, [vehicleid]);
-    //console.log(result2.rows[0].status);
-    if (
-      result2.rows[0].status === "Under Maintenance" ||
-      result2.rows[0].status === "Active"
-    ) {
-      // console.log("here");
-      return res.status(409).json({ error: "Vehicle should be Inactive" });
-    }
-
-    const query = `
-    INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,nextduedate,remarks)
-    VALUES ($1,$2,$3,$4,$5,$6,$7)
-    RETURNING recordid
+    const query5 = `
+        SELECT status 
+        FROM vehicles
+        WHERE vehicleid = $1
     `;
+    const result6 = await con.query(query5,[vehicleid]);
+    if (result6.rows[0].status === "Active" || result6.rows[0].status === "Under Maintenance") {
+      return res.status(404).json({ error: "Please select any inactive vehicle" });
+  }
+
+    const query = `INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,nextduedate,remarks)
+    VALUES ($1,$2,$3,$4,$5,$6,$7)
+    RETURNING recordid`;
     const nextduedate = null;
     const result = await con.query(query, [
       userid,
@@ -613,10 +670,10 @@ app.post("/api/maintenanceregister", async (req, res) => {
 
     const update_query = `UPDATE vehicles
                             SET status='Under Maintenance'
-                            where vehicleid=$1`;
+                            where vehicleid=$1;`;
 
     const result1 = await con.query(update_query, [vehicleid]);
-    res.json(result1.rows[0].recordid);
+    res.json(result.rows[0].recordid);
   } catch (error) {
     console.error({ error: "Error in posting the record" });
     res.status(400).json({ error: "Error in posting the record" });

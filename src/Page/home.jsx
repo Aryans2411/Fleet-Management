@@ -20,6 +20,9 @@ export default function Home() {
   const [actvvehicle, setActvehicle] = useState(0);
   const [maintv, setmainv] = useState(0);
   const [tripInfo, setTripInfo] = useState([]);
+  const [totalrevenue,setTotalRevenue] = useState(0);
+  const [cost, setCost] = useState(0);
+  // const [profit,setProfit] = useState(0);
 
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
@@ -30,6 +33,7 @@ export default function Home() {
     vehiclesInMaintenance: 0,
     unusedVehicles: 0,
     drivers: 0,
+    totalrevenue:0,
   });
 
   useEffect(() => {
@@ -38,6 +42,8 @@ export default function Home() {
     actvehicle();
     maintenance_vehicle();
     getTripInfo();
+    getTotalRevenue();
+    getCost();
   }, []);
 
   const customIcon = new L.Icon({
@@ -114,7 +120,24 @@ export default function Home() {
       console.error("Failed to fetch active vehicles", error);
     }
   };
+  const getCost = async () => {
+    try {
+        const response = await fetch(
+        "http://localhost:4000/api/get_totalcost",
+        {
+          method: "GET",
+        }
+      );
+      if(!response.ok){
+          throw new Error("Error in fetching total cost!");
+      }
+      const data = await response.json();
+      setCost(data);
+    } catch (error) {
+        console.error("Failed to fetch cost", error);
+    }
 
+  }
   const maintenance_vehicle = async () => {
     try {
       const response = await fetch(
@@ -152,7 +175,21 @@ export default function Home() {
       console.error("Failed to fetch trips:", error.message);
     }
   };
-
+  const getTotalRevenue = async() =>{
+    const response = await fetch('http://localhost:4000/api/get_totalrevenue',{
+      method:"GET"
+    });
+    if(!response.ok){
+      throw new Error ("Error in fetching the total revenue");
+    }
+    try{
+    const data = await response.json();
+    console.log(data);
+    setTotalRevenue(data);
+  } catch(error){
+    console.error("Failed to fetch trips:",error.status);
+  }
+  }
   const RoutingMachine = ({ from, to, color = "#0000ff" }) => {
     // Added color prop with default value
     const map = useMap();
@@ -221,7 +258,7 @@ export default function Home() {
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Profit</h3>
             <p className="text-3xl font-bold text-green-400">
-              {dashboardData.profit}
+              {totalrevenue - cost}
             </p>
           </div>
         </div>
@@ -229,7 +266,7 @@ export default function Home() {
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Revenue</h3>
             <p className="text-3xl font-bold text-blue-400">
-              {dashboardData.revenue}
+              ₹ {totalrevenue}
             </p>
           </div>
         </div>
@@ -237,7 +274,7 @@ export default function Home() {
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Cost</h3>
             <p className="text-3xl font-bold text-red-400">
-              {dashboardData.cost}
+              {cost}
             </p>
           </div>
         </div>
