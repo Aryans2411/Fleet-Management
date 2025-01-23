@@ -366,6 +366,23 @@ export default function Trip() {
                     />
                   </div>
                   <div>
+                    <label
+                      className="block text-sm font-medium text-gray-300"
+                      htmlFor="endtime"
+                    >
+                      Revenue
+                    </label>
+                    <input
+                      type="text"
+                      id="revenue"
+                      name="revenue"
+                      value={formData.revenue}
+                      onChange={handleInputChange}
+                      className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      required
+                    />
+                  </div>
+                  <div>
                     <h2 className="text-center text-xl font-bold mt-4 mb-4 text-white">
                       {distancetravalled1
                         ? `distancetravalled1: ${distancetravalled1} km`
@@ -496,6 +513,12 @@ export default function Trip() {
                         >
                           Status
                         </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Revenue
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -532,6 +555,9 @@ export default function Trip() {
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {trip.tripstatus}
                             </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              ₹{trip.revenue != "0" ? trip.revenue : "0"}
+                            </td>
                           </tr>
                         ))
                       ) : (
@@ -550,7 +576,7 @@ export default function Trip() {
               </div>
             </div>
           </div>
-          // Replace the final MapContainer section with this corrected version:
+
           <MapContainer
             className="w-full max-w-4xl h-96 rounded-lg shadow-md"
             center={[12.9716, 77.5946]}

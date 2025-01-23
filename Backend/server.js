@@ -378,6 +378,7 @@ app.post("/api/tripregistered", async (req, res) => {
       endlatitude1,
       endlongitude1,
       distancetravalled1,
+      revenue,
     } = req.body;
     console.log(req.body);
     // Parse numeric and integer values
@@ -386,6 +387,7 @@ app.post("/api/tripregistered", async (req, res) => {
     const endlatitude = parseFloat(endlatitude1);
     const endlongitude = parseFloat(endlongitude1);
     const distancetravelled = parseInt(distancetravalled1);
+    const reveneue = parseInt(revenue);
     console.log(distancetravalled1);
 
     // Validate required fields
@@ -394,7 +396,8 @@ app.post("/api/tripregistered", async (req, res) => {
       !startlongitude ||
       !endlatitude ||
       !endlongitude ||
-      !starttime
+      !starttime ||
+      !revenue
     ) {
       return res
         .status(400)
@@ -462,8 +465,9 @@ app.post("/api/tripregistered", async (req, res) => {
         endlongitude,
         starttime,
         endtime,
-        distancetravelled
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10)
+        distancetravelled,
+        revenue
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11)
         RETURNING tripid;
         `;
 
@@ -480,6 +484,7 @@ app.post("/api/tripregistered", async (req, res) => {
       starttime,
       endtime,
       distancetravelled,
+      revenue,
     ]);
     const query4 = `
       UPDATE drivers
@@ -578,6 +583,17 @@ app.post("/api/maintenanceregister", async (req, res) => {
       res.status(400).json({ error: "Please fill all the details" });
     }
 
+    const query_check = `SELECT status FROM vehicles where vehicleid=$1 ;`;
+    const result2 = await con.query(query_check, [vehicleid]);
+    //console.log(result2.rows[0].status);
+    if (
+      result2.rows[0].status === "Under Maintenance" ||
+      result2.rows[0].status === "Active"
+    ) {
+      // console.log("here");
+      return res.status(409).json({ error: "Vehicle should be Inactive" });
+    }
+
     const query = `
     INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,nextduedate,remarks)
     VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -593,14 +609,14 @@ app.post("/api/maintenanceregister", async (req, res) => {
       nextduedate,
       remarks,
     ]);
-    console.log(result.rows[0].recordid);
+    // console.log(result.rows[0].recordid);
 
     const update_query = `UPDATE vehicles
                             SET status='Under Maintenance'
                             where vehicleid=$1`;
 
     const result1 = await con.query(update_query, [vehicleid]);
-    res.json(result.rows[0].recordid);
+    res.json(result1.rows[0].recordid);
   } catch (error) {
     console.error({ error: "Error in posting the record" });
     res.status(400).json({ error: "Error in posting the record" });

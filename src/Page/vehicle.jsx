@@ -45,6 +45,14 @@ export default function Vehicle() {
     iconAnchor: [17, 45],
     popupAnchor: [0, -40],
   });
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  };
+
   const LocationMarker = () => {
     const [markerPosition, setMarkerPosition] = useState(null);
 
@@ -126,6 +134,7 @@ export default function Vehicle() {
 
       if (!response.ok) {
         const errorData = await response.json();
+
         throw new Error(
           errorData.error || "Error registering maintenance record"
         );
