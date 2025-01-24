@@ -11,7 +11,7 @@ app = Flask(__name__)
 CORS(app)  # Enable Cross-Origin Resource Sharing (CORS) for React frontend
 
 # Load the trained model
-model_path = "/Users/aryansinha/Fleet Management/Fleet-Management/Backend/hhmodel.pkl"
+model_path = "Backend\hhmodel.pkl"
 # model_path = "Backend\hhmodel.pkl" # Update to the correct path
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
@@ -27,8 +27,8 @@ def predict():
         data = request.get_json()
         # print(data)
         test_instance = np.array(list(data.values())).reshape(1, -1)
-        print(test_instance)
-        print(test_instance)
+        # print(test_instance)
+        # print(test_instance)
         # Perform prediction
         probability = model.predict_proba(test_instance)[0, 1]  # Probability for class 1
         prediction = model.predict(test_instance)[0]  # Predicted class (0 or 1)
@@ -50,6 +50,7 @@ def predict():
             'days_to_maintenance': days_to_maintenance,
             'maintenance_date': maintenance_date_str,
         }
+        print(response)
         return jsonify(response)
 
     except Exception as e:

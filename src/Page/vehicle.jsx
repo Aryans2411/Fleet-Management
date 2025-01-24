@@ -588,8 +588,8 @@ export default function Vehicle() {
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {vehicle.nextduedate === null ?(
-                                  vehicle.make
-                              ):(vehicle.vehicleid)}
+                                  null
+                              ):(vehicle.nextduedate)}
                             </td>
                           </tr>
                         ))

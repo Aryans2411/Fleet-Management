@@ -699,9 +699,12 @@ app.get("/api/get_total_maintenance_vehicles", async (req, res) => {
 });
 app.post("/api/set_maintenance_date", async (req, res) => {
   try {
-    const { nextduedate } = req.body;
-    const query = `UPDATE vehicles SET nextduedate = $1`;
-    const response = await con.query(query, [userid]);
+    const { nextduedate,registrationnumber } = req.body;
+    console.log("request body: ",req.body);
+    const query = `UPDATE vehicles SET nextduedate = $1
+                  WHERE registrationnumber = $2`;
+                  const response = await con.query(query, [nextduedate,registrationnumber]);
+    res.json(response.rows);
   } catch (error) {
     console.error({ error: "Error in posting the record" });
     res.status(400).json({ error: "Error in posting the record" });
