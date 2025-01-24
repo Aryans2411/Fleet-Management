@@ -3,13 +3,15 @@ import pickle
 import numpy as np
 from datetime import datetime, timedelta
 from flask_cors import CORS
+import os
+# Load the .env file
 
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)  # Enable Cross-Origin Resource Sharing (CORS) for React frontend
 
 # Load the trained model
-model_path = 'D:\\Web Development\\Fleet-Management\\Backend\\hhmodel.pkl'  # Update to the correct path
+model_path = "Backend\hhmodel.pkl" # Update to the correct path
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
