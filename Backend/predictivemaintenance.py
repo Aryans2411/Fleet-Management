@@ -24,8 +24,10 @@ def predict():
     try:
         # Parse input data
         data = request.get_json()
-        test_instance = np.array(data['features']).reshape(1, -1)  # Input features from frontend
-
+        # print(data)
+        test_instance = np.array(list(data.values())).reshape(1, -1)
+        print(test_instance)
+        print(test_instance)
         # Perform prediction
         probability = model.predict_proba(test_instance)[0, 1]  # Probability for class 1
         prediction = model.predict(test_instance)[0]  # Predicted class (0 or 1)

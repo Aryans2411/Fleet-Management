@@ -4,45 +4,53 @@ import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
 
 export default function Analytics() {
-  // State to manage form visibility and animation
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [formAnimation, setFormAnimation] = useState("");
-
-  // State to manage form data
+  // State to manage form data with all specified parameters
   const [formData, setFormData] = useState({
-    make: "",
-    registrationnumber: "",
-    fueltype: "",
-    idealmileage: "",
+    engine_rpm: '',
+    lub_oil_pressure: '',
+    fuel_pressure: '',
+    coolant_pressure: '',
+    lub_oil_temp: '',
+    coolant_temp: '',
+    fuel_type: '',
+    mileage: '',
+    fuel_consumption_rate: '',
+    engine_runtime: '',
+    temperature_difference: ''
   });
 
-  // State to manage prediction results
+  // State for managing form submission and results
   const [predictionResult, setPredictionResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Handle input changes in the form
+  // Handle input changes for all form fields
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value } = e.target;
+  
+  // Debugging: Log the input details
+  console.log('Input Change:', { name, value });
+
+  // Special handling for fuel_type
+  if (name === 'fuel_type') {
+    // Convert fuel type to numerical representation
+    const fuelTypeValue = value === 'petrol' ? 0.0 : 
+                          value === 'diesel' ? 1.0 : 
+                          value;
+    
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value, // Keep the string value for display
+      [`${name}_numeric`]: fuelTypeValue // Store numeric value separately
+    }));
+  } else {
+    // Default handling for other inputs
     setFormData(prevState => ({
       ...prevState,
       [name]: value
     }));
-  };
-
-  // Toggle form visibility with smooth animation
-  const toggleForm = () => {
-    if (isFormOpen) {
-      setFormAnimation("opacity-0");
-      setTimeout(() => {
-        setIsFormOpen(false);
-        setFormAnimation("");
-      }, 300);
-    } else {
-      setIsFormOpen(true);
-      setFormAnimation("opacity-100");
-    }
-  };
+  }
+};
 
   // Handle form submission
   const handleSubmit = async (e) => {
@@ -52,27 +60,26 @@ export default function Analytics() {
     setPredictionResult(null);
 
     try {
-      // Prepare data for submission
+      // Prepare data for submission with parsed float values
       const submissionData = {
-        make: formData.make,
-        registrationnumber: formData.registrationnumber,
-        fueltype: formData.fueltype,
-        idealmileage: parseFloat(formData.idealmileage)
-      };
+      engine_rpm: parseFloat(formData.engine_rpm),
+      lub_oil_pressure: parseFloat(formData.lub_oil_pressure),
+      fuel_pressure: parseFloat(formData.fuel_pressure),
+      coolant_pressure: parseFloat(formData.coolant_pressure),
+      lub_oil_temp: parseFloat(formData.lub_oil_temp),
+      coolant_temp: parseFloat(formData.coolant_temp),
+      fuel_type: formData.fuel_type === 'petrol' ? 0.0 : 1.0,
+      mileage: parseFloat(formData.mileage),
+      fuel_consumption_rate: parseFloat(formData.fuel_consumption_rate),
+      engine_runtime: parseFloat(formData.engine_runtime),
+      temperature_difference: parseFloat(formData.temperature_difference)
+    };
 
       // Send POST request to prediction endpoint
       const response = await axios.post('http://localhost:5001/predict', submissionData);
       
       // Update state with prediction results
       setPredictionResult(response.data);
-      
-      // Optional: Reset form after successful submission
-      setFormData({
-        make: "",
-        registrationnumber: "",
-        fueltype: "",
-        idealmileage: "",
-      });
     } catch (err) {
       // Handle any errors during submission
       setError(err.response?.data?.message || "An error occurred during prediction");
@@ -86,120 +93,215 @@ export default function Analytics() {
       <Navigation />
       
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Vehicle Prediction Analytics</h1>
-          <button 
-            onClick={toggleForm}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
-          >
-            {isFormOpen ? "Close Form" : "Add New Vehicle"}
-          </button>
-        </div>
+        <h1 className="text-3xl font-bold mb-6 text-center">Predictive Maintenance Analysis</h1>
+        
+        <form onSubmit={handleSubmit} className="bg-gray-800 p-8 rounded-lg shadow-lg">
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Engine RPM */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Engine RPM
+              </label>
+              <input
+                type="number"
+                name="engine_rpm"
+                value={formData.engine_rpm}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Engine RPM"
+                required
+              />
+            </div>
 
-        {isFormOpen && (
-          <div
-            className={`mt-8 bg-gray-800 p-6 rounded-lg shadow-md transition-opacity duration-300 ease-in-out ${formAnimation}`}
-          >
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label
-                  className="block text-sm font-medium text-gray-300"
-                  htmlFor="make"
-                >
-                  Vehicle Model
-                </label>
-                <input
-                  type="text"
-                  id="make"
-                  name="make"
-                  value={formData.make}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                  placeholder="Enter vehicle model"
-                />
-              </div>
+            {/* Lub Oil Pressure */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Lubricant Oil Pressure
+              </label>
+              <input
+                type="number"
+                name="lub_oil_pressure"
+                value={formData.lub_oil_pressure}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Lub Oil Pressure"
+                required
+              />
+            </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium text-gray-300"
-                  htmlFor="registrationnumber"
-                >
-                  Registration Number
-                </label>
-                <input
-                  type="text"
-                  id="registrationnumber"
-                  name="registrationnumber"
-                  value={formData.registrationnumber}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                  placeholder="Enter registration number"
-                />
-              </div>
+            {/* Fuel Pressure */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Fuel Pressure
+              </label>
+              <input
+                type="number"
+                name="fuel_pressure"
+                value={formData.fuel_pressure}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Fuel Pressure"
+                required
+              />
+            </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium text-gray-300"
-                  htmlFor="fueltype"
-                >
-                  Fuel Type
-                </label>
-                <select
-                  id="fueltype"
-                  name="fueltype"
-                  value={formData.fueltype}
-                  onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                >
-                  <option value="" disabled>
-                    Select Fuel Type
-                  </option>
-                  <option value="Petrol">Petrol</option>
-                  <option value="Diesel">Diesel</option>
-                </select>
-              </div>
+            {/* Coolant Pressure */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Coolant Pressure
+              </label>
+              <input
+                type="number"
+                name="coolant_pressure"
+                value={formData.coolant_pressure}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Coolant Pressure"
+                required
+              />
+            </div>
 
-              <div>
-                <label
-                  className="block text-sm font-medium text-gray-300"
-                  htmlFor="idealmileage"
-                >
-                  Mileage (km/l)
-                </label>
-                <input
-                  type="number"
-                  id="idealmileage"
-                  name="idealmileage"
-                  value={formData.idealmileage}
-                  onChange={handleInputChange}
-                  step="0.01"
-                  className="mt-1 block w-full rounded-md bg-gray-700 text-white border-gray-600 focus:ring-indigo-500 focus:border-indigo-500"
-                  required
-                  placeholder="Enter vehicle mileage"
-                />
-              </div>
+            {/* Lub Oil Temperature */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Lubricant Oil Temperature
+              </label>
+              <input
+                type="number"
+                name="lub_oil_temp"
+                value={formData.lub_oil_temp}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Lub Oil Temp"
+                required
+              />
+            </div>
 
-              <div className="flex justify-between items-center">
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
-                >
-                  {isLoading ? "Processing..." : "Get Prediction"}
-                </button>
-              </div>
-            </form>
+            {/* Coolant Temperature */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Coolant Temperature
+              </label>
+              <input
+                type="number"
+                name="coolant_temp"
+                value={formData.coolant_temp}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Coolant Temp"
+                required
+              />
+            </div>
+            {/* Fuel Type */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Fuel Type
+              </label>
+              <select
+                name="fuel_type"
+                value={formData.fuel_type}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                required
+              >
+                <option value="">Select Fuel Type</option>
+                <option value="petrol">Petrol</option>
+                <option value="diesel">Diesel</option>
+              </select>
+            </div>
+
+            {/* Mileage */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Mileage
+              </label>
+              <input
+                type="number"
+                name="mileage"
+                value={formData.mileage}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Mileage"
+                required
+              />
+            </div>
+
+            {/* Fuel Consumption Rate */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Fuel Consumption Rate
+              </label>
+              <input
+                type="number"
+                name="fuel_consumption_rate"
+                value={formData.fuel_consumption_rate}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Fuel Consumption Rate"
+                required
+              />
+            </div>
+
+            {/* Engine Runtime */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Engine Runtime
+              </label>
+              <input
+                type="number"
+                name="engine_runtime"
+                value={formData.engine_runtime}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Engine Runtime"
+                required
+              />
+            </div>
+
+            {/* Temperature Difference */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                Temperature Difference
+              </label>
+              <input
+                type="number"
+                name="temperature_difference"
+                value={formData.temperature_difference}
+                onChange={handleInputChange}
+                step="0.01"
+                className="w-full bg-gray-700 text-white rounded-md border-gray-600 focus:ring-indigo-500"
+                placeholder="Enter Temperature Difference"
+                required
+              />
+            </div>
           </div>
-        )}
+
+          {/* Submit Button */}
+          <div className="mt-6 text-center">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md transition duration-300 disabled:opacity-50"
+            >
+              {isLoading ? "Processing..." : "Get Maintenance Prediction"}
+            </button>
+          </div>
+        </form>
 
         {/* Prediction Result Display */}
         {predictionResult && (
           <div className="mt-6 bg-gray-800 p-6 rounded-lg">
             <h2 className="text-xl font-bold mb-4">Prediction Results</h2>
-            <pre className="bg-gray-700 p-4 rounded">
+            <pre className="bg-gray-700 p-4 rounded text-sm overflow-x-auto">
               {JSON.stringify(predictionResult, null, 2)}
             </pre>
           </div>
