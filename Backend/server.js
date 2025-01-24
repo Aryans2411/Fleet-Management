@@ -542,22 +542,22 @@ app.get("/api/get_all_trips", async (req, res) => {
     });
   }
 });
-app.get("/api/get_totalrevenue",async(req,res)=>{
+app.get("/api/get_totalrevenue", async (req, res) => {
   try {
-      const query = `
+    const query = `
           SELECT SUM(revenue) 
           FROM Trips
           WHERE userid = $1
       `;
-      const result = await con.query(query,[userid]);
-      console.log("result",result.rows[0].sum);
-      res.json(Number(result.rows[0].sum));
+    const result = await con.query(query, [userid]);
+    console.log("result", result.rows[0].sum);
+    res.json(Number(result.rows[0].sum));
   } catch (error) {
-      console.error({error:"Error in fetching the total revenue"});
-      res.status(500).json({error:"Error in fetching the total revenue"});
+    console.error({ error: "Error in fetching the total revenue" });
+    res.status(500).json({ error: "Error in fetching the total revenue" });
   }
 });
-app.get("/api/get_totalcost",async(req,res)=>{
+app.get("/api/get_totalcost", async (req, res) => {
   try {
     const petrolprice = 102;
     const dieselprice = 75;
@@ -566,7 +566,7 @@ app.get("/api/get_totalcost",async(req,res)=>{
     FROM maintenancerecords
     WHERE userid=$1
     `;
-    const result = await con.query(query1,[userid]);
+    const result = await con.query(query1, [userid]);
     const sum = parseInt(result.rows[0].sum);
     const query2 = `
     SELECT 
@@ -583,25 +583,25 @@ app.get("/api/get_totalcost",async(req,res)=>{
       WHERE v.userid = $3;
       
       `;
-      const result2 = await con.query(query2,[petrolprice,dieselprice,userid]);
-      const netamount1 = parseInt(result2.rows[0].net_amount);
-      const query3 = `
+    const result2 = await con.query(query2, [petrolprice, dieselprice, userid]);
+    const netamount1 = parseInt(result2.rows[0].net_amount);
+    const query3 = `
       SELECT 
       SUM(t.distancetravelled * d.earningperkm) AS net_earning
       FROM trips t
       JOIN drivers d ON t.driverid = d.driverid 
       WHERE d.userid = $1;
-      `
-      const result3 = await con.query(query3,[userid]);
-      const netamount2 = parseInt(result3.rows[0].net_earning);
-      console.log(netamount2);
-      // console.log(netamount1);
-      // console.log("result",result.rows[0].sum,result2.rows[0].net_amount," ",result3.rows[0].net_earning);
-      const cost =(sum + netamount1 + netamount2);
-      res.json(cost);
+      `;
+    const result3 = await con.query(query3, [userid]);
+    const netamount2 = parseInt(result3.rows[0].net_earning);
+    console.log(netamount2);
+    // console.log(netamount1);
+    // console.log("result",result.rows[0].sum,result2.rows[0].net_amount," ",result3.rows[0].net_earning);
+    const cost = sum + netamount1 + netamount2;
+    res.json(cost);
   } catch (error) {
-      console.error({error:"Error in fetching the total cost"});
-      res.status(500).json({error:"Error in fetching the total cost"});
+    console.error({ error: "Error in fetching the total cost" });
+    res.status(500).json({ error: "Error in fetching the total cost" });
   }
 });
 //API endpoint for getting total active vehicles
@@ -641,17 +641,22 @@ app.post("/api/maintenanceregister", async (req, res) => {
       !maintenancedate ||
       !remarks
     ) {
-       res.status(400).json({ error: "Please fill all the details" });
+      res.status(400).json({ error: "Please fill all the details" });
     }
     const query5 = `
         SELECT status 
         FROM vehicles
         WHERE vehicleid = $1
     `;
-    const result6 = await con.query(query5,[vehicleid]);
-    if (result6.rows[0].status === "Active" || result6.rows[0].status === "Under Maintenance") {
-      return res.status(404).json({ error: "Please select any inactive vehicle" });
-  }
+    const result6 = await con.query(query5, [vehicleid]);
+    if (
+      result6.rows[0].status === "Active" ||
+      result6.rows[0].status === "Under Maintenance"
+    ) {
+      return res
+        .status(404)
+        .json({ error: "Please select any inactive vehicle" });
+    }
 
     const query = `INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,nextduedate,remarks)
     VALUES ($1,$2,$3,$4,$5,$6,$7)
@@ -692,7 +697,16 @@ app.get("/api/get_total_maintenance_vehicles", async (req, res) => {
     res.status(500).json({ error: "Fetching total number of vehicles" });
   }
 });
-
+app.post("/api/set_maintenance_date", async (req, res) => {
+  try {
+    const { nextduedate } = req.body;
+    const query = `UPDATE vehicles SET nextduedate = $1`;
+    const response = await con.query(query, [userid]);
+  } catch (error) {
+    console.error({ error: "Error in posting the record" });
+    res.status(400).json({ error: "Error in posting the record" });
+  }
+});
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });

@@ -5,36 +5,39 @@ import Footer from "../Components/Footer/Footer";
 
 export default function Analytics() {
   const [formData, setFormData] = useState({
-    engine_rpm: '',
-    lub_oil_pressure: '',
-    fuel_pressure: '',
-    coolant_pressure: '',
-    lub_oil_temp: '',
-    coolant_temp: '',
-    fuel_type: '',
-    mileage: '',
-    fuel_consumption_rate: '',
-    engine_runtime: '',
-    temperature_difference: ''
+    registrationnumber: "",
+    engine_rpm: "",
+    lub_oil_pressure: "",
+    fuel_pressure: "",
+    coolant_pressure: "",
+    lub_oil_temp: "",
+    coolant_temp: "",
+    fuel_type: "",
+    mileage: "",
+    fuel_consumption_rate: "",
+    engine_runtime: "",
+    temperature_difference: "",
   });
 
   const [predictionResult, setPredictionResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [nextduedate, setNextduedate] = useState("");
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'fuel_type') {
-      const fuelTypeValue = value === 'petrol' ? 0.0 : value === 'diesel' ? 1.0 : value;
-      setFormData(prevState => ({
+    if (name === "fuel_type") {
+      const fuelTypeValue =
+        value === "petrol" ? 0.0 : value === "diesel" ? 1.0 : value;
+      setFormData((prevState) => ({
         ...prevState,
         [name]: value,
-        [`${name}_numeric`]: fuelTypeValue
+        [`${name}_numeric`]: fuelTypeValue,
       }));
     } else {
-      setFormData(prevState => ({
+      setFormData((prevState) => ({
         ...prevState,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -47,23 +50,43 @@ export default function Analytics() {
 
     try {
       const submissionData = {
+        registrationnumber: formData.registrationnumber,
         engine_rpm: parseFloat(formData.engine_rpm),
         lub_oil_pressure: parseFloat(formData.lub_oil_pressure),
         fuel_pressure: parseFloat(formData.fuel_pressure),
         coolant_pressure: parseFloat(formData.coolant_pressure),
         lub_oil_temp: parseFloat(formData.lub_oil_temp),
         coolant_temp: parseFloat(formData.coolant_temp),
-        fuel_type: formData.fuel_type === 'petrol' ? 0.0 : 1.0,
+        fuel_type: formData.fuel_type === "petrol" ? 0.0 : 1.0,
         mileage: parseFloat(formData.mileage),
         fuel_consumption_rate: parseFloat(formData.fuel_consumption_rate),
         engine_runtime: parseFloat(formData.engine_runtime),
-        temperature_difference: parseFloat(formData.temperature_difference)
+        temperature_difference: parseFloat(formData.temperature_difference),
       };
 
-      const response = await axios.post('http://localhost:5001/predict', submissionData);
+      const response = await axios.post(
+        "http://localhost:5001/predict",
+        submissionData
+      );
+
       setPredictionResult(response.data);
+      const maintenanceDate = response.data.maintenance_date;
+      setNextduedate(maintenanceDate);
+
+      await fetch("http://localhost:4000/api/set_maintenance_date", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          maintenance_date: maintenanceDate,
+          registration_number: formData.registrationnumber,
+        }),
+      });
     } catch (err) {
-      setError(err.response?.data?.message || "An error occurred during prediction");
+      setError(
+        err.response?.data?.message || "An error occurred during prediction"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -72,15 +95,34 @@ export default function Analytics() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
       <Navigation />
-      
+
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
           Predictive Maintenance Analysis
         </h1>
-        
-        <form onSubmit={handleSubmit} className="bg-gray-800/50 backdrop-blur-md p-8 rounded-xl border border-gray-700 shadow-2xl hover:shadow-green-500/10 transition-shadow duration-300">
+
+        <form
+          onSubmit={handleSubmit}
+          className="bg-gray-800/50 backdrop-blur-md p-8 rounded-xl border border-gray-700 shadow-2xl hover:shadow-green-500/10 transition-shadow duration-300"
+        >
           <div className="grid md:grid-cols-2 gap-6">
-            {/* Input Fields */}
+            {/* Registration Number Field */}
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-300">
+                Registration Number
+              </label>
+              <input
+                type="text"
+                name="registrationnumber"
+                value={formData.registrationnumber}
+                onChange={handleInputChange}
+                className="w-full bg-gray-700/50 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500/50 p-3 transition-all duration-300"
+                placeholder="Enter Registration Number"
+                required
+              />
+            </div>
+
+            {/* Existing Input Fields */}
             {[
               { label: "Engine RPM", name: "engine_rpm" },
               { label: "Lubricant Oil Pressure", name: "lub_oil_pressure" },
@@ -91,7 +133,10 @@ export default function Analytics() {
               { label: "Mileage", name: "mileage" },
               { label: "Fuel Consumption Rate", name: "fuel_consumption_rate" },
               { label: "Engine Runtime", name: "engine_runtime" },
-              { label: "Temperature Difference", name: "temperature_difference" },
+              {
+                label: "Temperature Difference",
+                name: "temperature_difference",
+              },
             ].map((field, index) => (
               <div key={index} className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300">
@@ -149,23 +194,41 @@ export default function Analytics() {
             </h2>
             <div className="space-y-4">
               <div className="bg-gray-700/50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-200">Engine Condition</h3>
-                <p className={`text-2xl font-bold ${
-                  predictionResult.engine_condition === 'Normal' ? 'text-green-400' : 'text-red-400'
-                }`}>
+                <h3 className="text-lg font-semibold text-gray-200">
+                  Engine Condition
+                </h3>
+                <p
+                  className={`text-2xl font-bold ${
+                    predictionResult.engine_condition === "Normal"
+                      ? "text-green-400"
+                      : "text-red-400"
+                  }`}
+                >
                   {predictionResult.engine_condition}
                 </p>
               </div>
               <div className="bg-gray-700/50 p-4 rounded-lg">
-                <h3 className="text-lg font-semibold text-gray-200">Maintenance Probability</h3>
+                <h3 className="text-lg font-semibold text-gray-200">
+                  Maintenance Probability
+                </h3>
                 <div className="w-full bg-gray-600 rounded-full h-2.5 mt-2">
                   <div
                     className="bg-gradient-to-r from-green-400 to-blue-500 h-2.5 rounded-full"
-                    style={{ width: `${predictionResult.maintenance_probability * 100}%` }}
+                    style={{
+                      width: `${predictionResult.probability * 100}%`,
+                    }}
                   ></div>
                 </div>
                 <p className="text-gray-300 mt-2">
-                  {Math.round(predictionResult.maintenance_probability * 100)}%
+                  {Math.round(predictionResult.probability * 100)}%
+                </p>
+              </div>
+              <div className="bg-gray-700/50 p-4 rounded-lg">
+                <h3 className="text-lg font-semibold text-gray-200">
+                  Maintenance Date
+                </h3>
+                <p className={`text-2xl font-bold`}>
+                  {predictionResult.maintenance_date}{" "}
                 </p>
               </div>
             </div>

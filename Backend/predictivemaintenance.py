@@ -11,7 +11,8 @@ app = Flask(__name__)
 CORS(app)  # Enable Cross-Origin Resource Sharing (CORS) for React frontend
 
 # Load the trained model
-model_path = "Backend\hhmodel.pkl" # Update to the correct path
+model_path = "/Users/aryansinha/Fleet Management/Fleet-Management/Backend/hhmodel.pkl"
+# model_path = "Backend\hhmodel.pkl" # Update to the correct path
 with open(model_path, 'rb') as file:
     model = pickle.load(file)
 
