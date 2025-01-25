@@ -17,28 +17,53 @@ const ChatGPTClone = () => {
   }, []);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  if (!input.trim() || isLoading) return;
 
-    setIsLoading(true);
-    const userMessage = { role: "user", content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput("");
+  setIsLoading(true);
+  const userMessage = { role: "user", content: input };
+  setMessages(prev => [...prev, userMessage]);
+  setInput("");
 
-    try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "This is a simulated response. In a real implementation, this would come from your AI API.",
-      }]);
-    } catch {
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "⚠️ Sorry, I encountered an error. Please try again.",
-      }]);
-    } finally {
-      setIsLoading(false);
+  try {
+    const response = await fetch('http://localhost:4000/api/processPrompt', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ prompt: input.trim() }),
+    });
+    console.log(response);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to get response');
     }
-  };
+
+    setMessages(prev => [
+      ...prev,
+      {
+        role: "assistant",
+        content: `${data.response}\n\n`,
+        metadata: {
+          query: data.query,
+          relevantTable: data.relevantTable,
+          rawResults: data.rawResults
+        }
+      }
+    ]);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
+    setMessages(prev => [
+      ...prev,
+      {
+        role: "assistant",
+        content: `⚠️ Error: ${errorMessage}`,
+      }
+    ]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   // Animation variants :cite[3]:cite[7]
   const messageVariants = {
@@ -61,7 +86,7 @@ const ChatGPTClone = () => {
             className={`flex gap-4 ${message.role === "user" ? "justify-start" : "justify-start"}`}
           >
             <div className="mt-2">
-              <div className={`p-2 rounded-lg ${message.role === "user" ? "bg-blue-600/20" : "bg-indigo-600/20"}`}>
+              <div className={`p-2 rounded-lg ${message.role === "user" ? "bg-black" : "bg-blue-600/20"}`}>
                 {message.role === "user" ? (
                   <BsPerson className="text-lg text-blue-400" />
                 ) : (

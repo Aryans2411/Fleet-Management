@@ -4,6 +4,7 @@ import path from "path";
 // import Groq from "groq-sdk";
 import { fileURLToPath } from "url";
 import fs from "fs";
+import Groq from "groq-sdk";
 import "dotenv/config";
 import bcrypt from "bcrypt";
 import cors from "cors";
@@ -14,7 +15,10 @@ const app = express();
 const port = 4000;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
+const API_KEY = process.env.GROQ_API_KEY;
+const groq = new Groq({
+  apiKey: API_KEY,
+});
 const con = new Client({
   host: "localhost",
   user: "postgres",
@@ -708,6 +712,214 @@ app.post("/api/set_maintenance_date", async (req, res) => {
   } catch (error) {
     console.error({ error: "Error in posting the record" });
     res.status(400).json({ error: "Error in posting the record" });
+  }
+});
+// Function to get structure for all tables
+const getTableStructures = async () => {
+  const dbStructure = {};
+  try {
+    const query = `
+      SELECT 
+        table_name,
+        column_name,
+        data_type
+      FROM 
+        information_schema.columns
+      WHERE 
+        table_schema = 'public'
+      ORDER BY 
+        table_name, ordinal_position;
+    `;
+
+    const result = await con.query(query);
+    result.rows.forEach((row) => {
+      if (!dbStructure[row.table_name]) {
+        dbStructure[row.table_name] = [];
+      }
+      dbStructure[row.table_name].push({
+        column: row.column_name,
+        type: row.data_type,
+      });
+    });
+
+    return dbStructure;
+  } catch (error) {
+    console.error("Error fetching table structures:", error);
+    throw error;
+  }
+};
+
+// Function to let the agent decide which table to use
+const determineRelevantTable = async (prompt, dbStructure) => {
+  const schemaDescription = Object.entries(dbStructure)
+    .map(([tableName, columns]) => {
+      const columnDesc = columns
+        .map((col) => `${col.column}: ${col.type}`)
+        .join(", ");
+      return `Table ${tableName} has columns: ${columnDesc}`;
+    })
+    .join("\n");
+
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `You are a database expert. Given a user whose userid is ${userid} and user's question and database schema, return only the single most relevant table name that would be needed to answer the question. Return just the table name as a string without any additional text or formatting.`,
+      },
+      {
+        role: "user",
+        content: `Schema:\n${schemaDescription}\n\nQuestion: ${prompt}\n\nReturn only the most relevant table name.`,
+      },
+    ],
+    model: "llama3-70b-8192",
+    temperature: 0.1,
+    max_tokens: 50,
+  });
+
+  return completion.choices[0]?.message?.content.trim();
+};
+
+// Function to extract all content from the selected table
+const extractTableContent = async (tableName) => {
+  try {
+    // Get all data from the table
+    const query = `SELECT * FROM ${tableName};`;
+    const result = await con.query(query);
+
+    // Convert the table content to a formatted string
+    const contentString = result.rows
+      .map((row) => JSON.stringify(row))
+      .join("\n");
+
+    return {
+      data: result.rows,
+      contentString: contentString,
+    };
+  } catch (error) {
+    console.error(`Error extracting content from ${tableName}:`, error);
+    throw error;
+  }
+};
+
+// Function to generate SQL query with table content context
+const generateSQLQuery = async (
+  prompt,
+  dbStructure,
+  tableName,
+  tableContent
+) => {
+  // Create context with schema and table content
+  const tableSchema = dbStructure[tableName];
+  const schemaContext = `Table ${tableName}:\nColumns: ${tableSchema
+    .map((col) => `${col.column}: ${col.type}`)
+    .join(", ")}\n\nTable content sample:\n${tableContent.contentString.slice(
+    0,
+    1000
+  )}...`; // Limiting content sample to avoid token limits
+
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `
+       You are an SQL expert who can only READ the database. Do not generate any queries related to INSERT, UPDATE, DELETE or other modification queries. You have access to the following database context:\n${schemaContext}\n and userid is ${userid} and emailid is ${emailid}.
+        Do not entertain queries that request information about other users.
+        Return only the SQL query without any explanation.
+        Generate a SQL query that answers the user's question using the provided table.`,
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    model: "llama3-70b-8192",
+    temperature: 0.2,
+    max_tokens: 512,
+  });
+
+  return completion.choices[0]?.message?.content.trim();
+};
+
+// Function to interpret query results
+const interpretResults = async (
+  prompt,
+  queryResults,
+  query,
+  tableName,
+  tableContent
+) => {
+  const completion = await groq.chat.completions.create({
+    messages: [
+      {
+        role: "system",
+        content: `You are an expert at interpreting database results. Provide a clear, natural language answer to the user's question. Include relevant context from the data but be concise.`,
+      },
+      {
+        role: "user",
+        content: `Original question: ${prompt}\n
+                 Query executed: ${query}\n
+                 Table used: ${tableName}\n
+                 Results: ${JSON.stringify(queryResults)}\n
+                 Please provide a clear answer to the original question based on these results.`,
+      },
+    ],
+    model: "llama3-70b-8192",
+    temperature: 0.3,
+    max_tokens: 150,
+  });
+
+  return completion.choices[0]?.message?.content;
+};
+
+// AI Inference API endpoint
+app.post("/api/processPrompt", async (req, res) => {
+  try {
+    const { prompt } = req.body;
+    if (!prompt) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    // Step 1: Get database schema
+    const dbStructure = await getTableStructures();
+
+    // Step 2: Determine the relevant table
+    const relevantTable = await determineRelevantTable(prompt, dbStructure);
+
+    // Step 3: Extract content from the relevant table
+    const tableContent = await extractTableContent(relevantTable);
+
+    // Step 4: Generate SQL query with context
+    const sqlQuery = await generateSQLQuery(
+      prompt,
+      dbStructure,
+      relevantTable,
+      tableContent
+    );
+    console.log("Generated SQL Query:", sqlQuery);
+
+    // Step 5: Execute the query
+    const sqlQueryTrim = sqlQuery.replace(/^```|```$/g, "").trim();
+    const queryResult = await con.query(sqlQueryTrim);
+
+    // Step 6: Interpret results with full context
+    const interpretation = await interpretResults(
+      prompt,
+      queryResult.rows,
+      sqlQuery,
+      relevantTable,
+      tableContent
+    );
+    console.log(interpretation);
+    // Send response
+    res.json({
+      response: interpretation,
+      query: sqlQuery,
+      relevantTable: relevantTable,
+      rawResults: queryResult.rows,
+    });
+  } catch (err) {
+    console.error("Error processing prompt:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 app.listen(port, () => {
