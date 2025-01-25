@@ -11,6 +11,7 @@ import Home from "./Page/home.jsx";
 import LandingPage from "./Page/landing.jsx";
 import Login from "./Components/Login/Login.jsx";
 import Signup from "./Components/Signup/Signup.jsx";
+import Databridgeai from "./Page/databridgeai.jsx";
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/driver" element={<Driver />} />
           <Route path="/trip" element={<Trip />} />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/databridgeai" element={<Databridgeai />} />
         </Routes>
       </Router>
     </div>

@@ -8,6 +8,7 @@ const initialNavigation = [
   { name: "Driver", href: "/driver", key: "driver" },
   { name: "Analytics", href: "/analytics", key: "analytics" },
   { name: "Trip", href: "/trip", key: "trip" },
+  { name: "DataBridgeAI", href: "/databridgeai", key:"databridgeai"},
 ];
 
 function classNames(...classes) {
