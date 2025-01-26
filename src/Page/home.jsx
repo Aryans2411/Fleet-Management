@@ -274,7 +274,7 @@ export default function Home() {
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Cost</h3>
             <p className="text-3xl font-bold text-red-400">
-              {cost}
+              {cost === null ? 0 : cost}
             </p>
           </div>
         </div>
