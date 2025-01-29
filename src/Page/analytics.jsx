@@ -22,7 +22,7 @@ export default function Analytics() {
   const [predictionResult, setPredictionResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [registrationnumber,setRegistrationNumber] = useState(null);
+  const [registrationnumber, setRegistrationNumber] = useState(null);
   const [nextduedate, setNextduedate] = useState("");
 
   const handleInputChange = (e) => {
@@ -72,7 +72,7 @@ export default function Analytics() {
       setPredictionResult(response.data);
       const maintenanceDate = response.data.maintenance_date;
       setNextduedate(maintenanceDate);
-      console.log(nextduedate,registrationnumber);
+      // console.log(nextduedate,registrationnumber);
       await fetch("http://localhost:4000/api/set_maintenance_date", {
         method: "POST",
         headers: {
@@ -114,8 +114,8 @@ export default function Analytics() {
               <input
                 type="text"
                 name="registrationnumber"
-                value= {registrationnumber}
-                onChange={(e)=>setRegistrationNumber(e.target.value)}
+                value={registrationnumber}
+                onChange={(e) => setRegistrationNumber(e.target.value)}
                 className="w-full bg-gray-700/50 text-white rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500/50 p-3 transition-all duration-300"
                 placeholder="Enter Registration Number"
                 required

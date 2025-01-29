@@ -14,14 +14,42 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
+import { Bar, Doughnut, Line, Pie } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title,
+  CategoryScale,
+  BarElement,
+  LinearScale,
+  PointElement,
+  LineElement,
+} from "chart.js";
+
+// Register the components you need, including CategoryScale, BarElement, and LinearScale
+ChartJS.register(
+  ArcElement,
+  PointElement,
+  Tooltip,
+  Legend,
+  Title,
+  CategoryScale,
+  BarElement,
+  LineElement,
+  LinearScale
+);
+
 export default function Home() {
   const [driversFreq, setDriverFreq] = useState(0);
   const [vehiclesFreq, setVehicleFreq] = useState(0);
   const [actvvehicle, setActvehicle] = useState(0);
   const [maintv, setmainv] = useState(0);
   const [tripInfo, setTripInfo] = useState([]);
-  const [totalrevenue,setTotalRevenue] = useState(0);
+  const [totalrevenue, setTotalRevenue] = useState(0);
   const [cost, setCost] = useState(0);
+  const [driver_info, setdriver_info] = useState([]);
   // const [profit,setProfit] = useState(0);
 
   const [dashboardData, setDashboardData] = useState({
@@ -33,7 +61,7 @@ export default function Home() {
     vehiclesInMaintenance: 0,
     unusedVehicles: 0,
     drivers: 0,
-    totalrevenue:0,
+    totalrevenue: 0,
   });
 
   useEffect(() => {
@@ -44,6 +72,7 @@ export default function Home() {
     getTripInfo();
     getTotalRevenue();
     getCost();
+    get_driver_info();
   }, []);
 
   const customIcon = new L.Icon({
@@ -122,22 +151,18 @@ export default function Home() {
   };
   const getCost = async () => {
     try {
-        const response = await fetch(
-        "http://localhost:4000/api/get_totalcost",
-        {
-          method: "GET",
-        }
-      );
-      if(!response.ok){
-          throw new Error("Error in fetching total cost!");
+      const response = await fetch("http://localhost:4000/api/get_totalcost", {
+        method: "GET",
+      });
+      if (!response.ok) {
+        throw new Error("Error in fetching total cost!");
       }
       const data = await response.json();
       setCost(data);
     } catch (error) {
-        console.error("Failed to fetch cost", error);
+      console.error("Failed to fetch cost", error);
     }
-
-  }
+  };
   const maintenance_vehicle = async () => {
     try {
       const response = await fetch(
@@ -175,21 +200,21 @@ export default function Home() {
       console.error("Failed to fetch trips:", error.message);
     }
   };
-  const getTotalRevenue = async() =>{
-    const response = await fetch('http://localhost:4000/api/get_totalrevenue',{
-      method:"GET"
+  const getTotalRevenue = async () => {
+    const response = await fetch("http://localhost:4000/api/get_totalrevenue", {
+      method: "GET",
     });
-    if(!response.ok){
-      throw new Error ("Error in fetching the total revenue");
+    if (!response.ok) {
+      throw new Error("Error in fetching the total revenue");
     }
-    try{
-    const data = await response.json();
-    console.log(data);
-    setTotalRevenue(data);
-  } catch(error){
-    console.error("Failed to fetch trips:",error.status);
-  }
-  }
+    try {
+      const data = await response.json();
+      console.log(data);
+      setTotalRevenue(data);
+    } catch (error) {
+      console.error("Failed to fetch trips:", error.status);
+    }
+  };
   const RoutingMachine = ({ from, to, color = "#0000ff" }) => {
     // Added color prop with default value
     const map = useMap();
@@ -249,6 +274,21 @@ export default function Home() {
     return null;
   };
 
+  const get_driver_info = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/driver_cost", {
+        method: "GET",
+      });
+      if (!response.ok)
+        throw new Error("Error in fetching total active vehicles");
+
+      const data = await response.json();
+      setdriver_info(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Failed to fetch active vehicles", error);
+    }
+  };
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col">
       <Navigation />
@@ -265,9 +305,7 @@ export default function Home() {
         <div className="card">
           <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Revenue</h3>
-            <p className="text-3xl font-bold text-blue-400">
-              ₹ {totalrevenue}
-            </p>
+            <p className="text-3xl font-bold text-blue-400">₹ {totalrevenue}</p>
           </div>
         </div>
         <div className="card">
@@ -310,6 +348,246 @@ export default function Home() {
           <h3 className="text-xl font-semibold mb-2">Drivers</h3>
           <p className="text-3xl font-bold text-blue-400">{driversFreq}</p>
         </div>
+      </div>
+      <div className="grid grid-cols-2 grid-rows-2 min-h-screen gap-6 p-4">
+        <div className="bg-gradient-to-r from-red-200 to-pink-200 shadow-lg hover:scale-105 transition-transform cursor-pointer p-6 rounded-lg max-w-full">
+          <Doughnut
+            data={{
+              labels: [
+                "Active Vehicles",
+                "Unused Vehicles",
+                "Vehicles Under Maintenance",
+              ],
+              datasets: [
+                {
+                  data: [
+                    actvvehicle,
+                    vehiclesFreq - actvvehicle - maintv,
+                    maintv,
+                  ],
+                  backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                  hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
+                  borderWidth: 0,
+                  hoverOffset: 10,
+                },
+              ],
+            }}
+            options={{
+              plugins: {
+                legend: {
+                  position: "right",
+                  labels: {
+                    color: "#4A5568",
+                    font: {
+                      size: 14,
+                      family: "Inter, sans-serif",
+                      weight: "500",
+                    },
+                  },
+                },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: "#2D3748",
+                  titleColor: "#F7FAFC",
+                  bodyColor: "#F7FAFC",
+                  borderColor: "#4A5568",
+                  borderWidth: 1,
+                  cornerRadius: 6,
+                  padding: 12,
+                },
+              },
+              animation: {
+                animateScale: true,
+                animateRotate: true,
+              },
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: "60%",
+            }}
+          />
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-200 to-indigo-200 shadow-lg hover:scale-105 transition-transform cursor-pointer rounded-xl p-6">
+          {driver_info.length > 0 ? (
+            <Pie
+              data={{
+                labels: driver_info.map((driver) => driver.name),
+                datasets: [
+                  {
+                    data: driver_info.map((driver) => driver.total_earning),
+                    backgroundColor: [
+                      "#FF6384",
+                      "#36A2EB",
+                      "#FFCE56",
+                      "#4BC0C0",
+                      "#9966FF",
+                      "#FF9F40",
+                      "#E7E9ED",
+                    ],
+                    hoverBackgroundColor: [
+                      "#FF6384",
+                      "#36A2EB",
+                      "#FFCE56",
+                      "#4BC0C0",
+                      "#9966FF",
+                      "#FF9F40",
+                      "#E7E9ED",
+                    ],
+                    borderWidth: 2,
+                    borderColor: "#FFFFFF",
+                    hoverOffset: 10,
+                  },
+                ],
+              }}
+              options={{
+                plugins: {
+                  legend: {
+                    position: "right",
+                    labels: {
+                      color: "#4A5568",
+                      font: {
+                        size: 14,
+                        family: "Inter, sans-serif",
+                        weight: "500",
+                      },
+                    },
+                  },
+                  tooltip: {
+                    enabled: true,
+                    backgroundColor: "#2D3748",
+                    titleColor: "#F7FAFC",
+                    bodyColor: "#F7FAFC",
+                    borderColor: "#4A5568",
+                    borderWidth: 1,
+                    cornerRadius: 6,
+                    padding: 12,
+                  },
+                },
+                animation: {
+                  animateScale: true,
+                  animateRotate: true,
+                },
+                responsive: true,
+                maintainAspectRatio: false,
+              }}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-700 text-lg font-medium">
+                No driver data available.
+              </p>
+            </div>
+          )}
+        </div>
+        <div className="bg-red-200 shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <Line
+            data={{
+              labels: [
+                "Active Vehicles",
+                "Unused Vehicles",
+                "Vehicles Under Maintenance",
+              ],
+              datasets: [
+                {
+                  label: "Revenue",
+                  data: [totalrevenue, totalrevenue * 0.8, totalrevenue * 0.9], // Multiple points
+                  fill: false,
+                  borderColor: "#FF6384",
+                  backgroundColor: "#FF6384",
+                  tension: 0.4,
+                  borderWidth: 2,
+                  pointBackgroundColor: "#FF6384",
+                  pointBorderColor: "#FF6384",
+                  pointHoverRadius: 6,
+                  pointRadius: 4,
+                },
+                {
+                  label: "Cost",
+                  data: [cost, cost * 0.7, cost * 0.85], // Multiple points
+                  fill: false,
+                  borderColor: "#36A2EB", // Different color for Cost
+                  backgroundColor: "#36A2EB",
+                  tension: 0.4,
+                  borderWidth: 2,
+                  pointBackgroundColor: "#36A2EB",
+                  pointBorderColor: "#36A2EB",
+                  pointHoverRadius: 6,
+                  pointRadius: 4,
+                },
+                {
+                  label: "Profit",
+                  data: [
+                    totalrevenue - cost,
+                    totalrevenue * 0.8 - cost * 0.7,
+                    totalrevenue * 0.9 - cost * 0.85,
+                  ], // Multiple points
+                  fill: false,
+                  borderColor: "#FFCE56", // Different color for Profit
+                  backgroundColor: "#FFCE56",
+                  tension: 0.4,
+                  borderWidth: 2,
+                  pointBackgroundColor: "#FFCE56",
+                  pointBorderColor: "#FFCE56",
+                  pointHoverRadius: 6,
+                  pointRadius: 4,
+                },
+              ],
+            }}
+            options={{
+              plugins: {
+                legend: {
+                  position: "right",
+                  labels: {
+                    color: "#4A5568",
+                    font: {
+                      size: 14,
+                      family: "Inter, sans-serif",
+                      weight: "500",
+                    },
+                  },
+                },
+                tooltip: {
+                  enabled: true,
+                  backgroundColor: "#2D3748",
+                  titleColor: "#F7FAFC",
+                  bodyColor: "#F7FAFC",
+                  borderColor: "#4A5568",
+                  borderWidth: 1,
+                  cornerRadius: 6,
+                  padding: 12,
+                },
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: {
+                    color: "rgba(0, 0, 0, 0.1)",
+                  },
+                  ticks: {
+                    color: "#4A5568",
+                    font: {
+                      family: "Inter, sans-serif",
+                    },
+                  },
+                },
+                x: {
+                  grid: {
+                    color: "rgba(0, 0, 0, 0.1)",
+                  },
+                  ticks: {
+                    color: "#4A5568",
+                    font: {
+                      family: "Inter, sans-serif",
+                    },
+                  },
+                },
+              },
+              responsive: true,
+              maintainAspectRatio: false,
+            }}
+          />
+        </div>
+        <div className="bg-red-200 shadow-lg hover:scale-105 transition-transform cursor-pointer"></div>
       </div>
       <div className="flex justify-center  mb-12 mt-6 ">
         <MapContainer

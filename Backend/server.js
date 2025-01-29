@@ -371,6 +371,7 @@ app.get("/api/get_all_vehicles", async (req, res) => {
     });
   }
 });
+
 // API endpoint for trip backend
 app.post("/api/tripregistered", async (req, res) => {
   try {
@@ -512,6 +513,7 @@ app.post("/api/tripregistered", async (req, res) => {
     res.status(500).json({ error: "Error in registering for trips" });
   }
 });
+
 //API endpoint for getting all trips
 app.get("/api/get_all_trips", async (req, res) => {
   try {
@@ -546,6 +548,7 @@ app.get("/api/get_all_trips", async (req, res) => {
     });
   }
 });
+
 app.get("/api/get_totalrevenue", async (req, res) => {
   try {
     const query = `
@@ -701,11 +704,11 @@ app.get("/api/get_total_maintenance_vehicles", async (req, res) => {
 });
 app.post("/api/set_maintenance_date", async (req, res) => {
   try {
-    const { nextduedate,registrationnumber } = req.body;
-    console.log("request body: ",req.body);
+    const { nextduedate, registrationnumber } = req.body;
+    console.log("request body: ", req.body);
     const query = `UPDATE vehicles SET nextduedate = $1
                   WHERE registrationnumber = $2`;
-                  const response = await con.query(query, [nextduedate,registrationnumber]);
+    const response = await con.query(query, [nextduedate, registrationnumber]);
     res.json(response.rows);
   } catch (error) {
     console.error({ error: "Error in posting the record" });
@@ -920,6 +923,28 @@ app.post("/api/processPrompt", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.get("/api/driver_cost", async (req, res) => {
+  try {
+    console.log("here");
+    const query = `SELECT d.name, SUM(t.revenue) AS total_earning
+                    FROM Drivers d
+                    JOIN Trips t ON d.driverid = t.driverid
+                    WHERE d.userid = $1
+                    GROUP BY d.name
+                    ORDER BY total_earning  
+                    limit 5
+                     `;
+
+    const result = await con.query(query, [userid]);
+    console.log(result.rows);
+    res.json(result.rows);
+  } catch (error) {
+    console.error({ error: "Error getting data record" });
+    res.status(400).json({ error: "Error getting data record" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });
