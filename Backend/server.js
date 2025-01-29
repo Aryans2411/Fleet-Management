@@ -52,7 +52,7 @@ async function initializeDatabase() {
     const sqlFilePath = path.join(__dirname, "db", "table.sql");
     const sqlCommands = fs.readFileSync(sqlFilePath, "utf8");
     await con.query(sqlCommands);
-    console.log("Tables initialized successfully");
+    // console.log("Tables initialized successfully");
   } catch (err) {
     console.error("Error initializing tables:", err);
   }
@@ -94,7 +94,7 @@ app.post("/formPost", async (req, res) => {
       return res.status(401).json({ error: "Invalid credentials" });
     }
 
-    console.log("reached here");
+    // console.log("reached here");
     // Route to the home page if credentials are valid
     //console.log("User authenticated successfully:", email);
     emailid = email;
@@ -163,7 +163,7 @@ app.post("/signUpPost", async (req, res) => {
 app.get("/initialise_table", async (req, res) => {
   await initializeDatabase();
   res.send("Tables initialized successfully");
-  console.log("Tables initialized successfully");
+  // console.log("Tables initialized successfully");
 });
 // api endpoint for finding out total number of drivers
 app.get("/api/get_totaldriver", async (req, res) => {
@@ -271,7 +271,7 @@ app.post("/api/driver_register", async (req, res) => {
   try {
     // Destructure inputs from the request body
     const { name, earningperkm, licensenumber, phonenumber } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     //console.log(req.body.licensenumber);
     //console.log(req.body.phonenumber);
     // Validate required fields
@@ -337,11 +337,11 @@ app.post("/api/driver_register", async (req, res) => {
 //api for getting all drivers
 app.get("/api/get_all_drivers", async (req, res) => {
   try {
-    console.log(userid);
+    // console.log(userid);
     const query = `SELECT * FROM drivers WHERE userid=$1`;
 
     const response = await con.query(query, [userid]);
-    console.log(response.rows);
+    // console.log(response.rows);
     res.json(response.rows);
   } catch (error) {
     console.error("Error fetching drivers data", error);
@@ -362,7 +362,7 @@ app.get("/api/get_all_vehicles", async (req, res) => {
   try {
     const query = `SELECT * FROM vehicles WHERE userid=$1`;
     const response = await con.query(query, [userid]);
-    console.log(response.rows);
+    // console.log(response.rows);
     res.json(response.rows);
   } catch (error) {
     console.error("Error fetching vehicles data", error);
@@ -384,7 +384,7 @@ app.post("/api/tripregistered", async (req, res) => {
       distancetravalled1,
       revenue,
     } = req.body;
-    console.log(req.body);
+    // console.log(req.body);
     // Parse numeric and integer values
     const startlatitude = parseFloat(startlatitude1);
     const startlongitude = parseFloat(startlongitude1);
@@ -392,7 +392,7 @@ app.post("/api/tripregistered", async (req, res) => {
     const endlongitude = parseFloat(endlongitude1);
     const distancetravelled = parseInt(distancetravalled1);
     const reveneue = parseInt(revenue);
-    console.log(distancetravalled1);
+    // console.log(distancetravalled1);
 
     // Validate required fields
     if (
@@ -447,7 +447,7 @@ app.post("/api/tripregistered", async (req, res) => {
     } else {
       return res.status(404).json({ error: "No inactive vehicles available." });
     }
-    console.log(bestVehicleID);
+    // console.log(bestVehicleID);
     // selecting driver_id
     const query3 = `
       SELECT driverid
@@ -456,7 +456,7 @@ app.post("/api/tripregistered", async (req, res) => {
     `;
     const response3 = await con.query(query3, [userid]);
     const driverid = response3.rows[0].driverid;
-    console.log(driverid);
+    // console.log(driverid);
     // Define the query to insert the trip into the database
     const query = `
     INSERT INTO trips (
@@ -505,7 +505,7 @@ app.post("/api/tripregistered", async (req, res) => {
 
     // console.log(response4.rows);
     // Return the newly created trip ID
-    console.log(response.rows);
+    // console.log(response.rows);
     res.json(response.rows);
   } catch (error) {
     console.error("Error in registering trips:", error);
@@ -554,7 +554,7 @@ app.get("/api/get_totalrevenue", async (req, res) => {
           WHERE userid = $1
       `;
     const result = await con.query(query, [userid]);
-    console.log("result", result.rows[0].sum);
+    // console.log("result", result.rows[0].sum);
     res.json(Number(result.rows[0].sum));
   } catch (error) {
     console.error({ error: "Error in fetching the total revenue" });
@@ -598,7 +598,7 @@ app.get("/api/get_totalcost", async (req, res) => {
       `;
     const result3 = await con.query(query3, [userid]);
     const netamount2 = parseInt(result3.rows[0].net_earning);
-    console.log(netamount2);
+    // console.log(netamount2);
     // console.log(netamount1);
     // console.log("result",result.rows[0].sum,result2.rows[0].net_amount," ",result3.rows[0].net_earning);
     const cost = sum + netamount1 + netamount2;
@@ -614,7 +614,7 @@ app.get("/api/get_active_vehicle", async (req, res) => {
     const query = `SELECT Count(*) FROM vehicles where userid=$1 AND status='Active'`;
     const response = await con.query(query, [userid]);
     const activeVehicleCount = response.rows[0].count;
-    console.log("active vehicles", activeVehicleCount);
+    // console.log("active vehicles", activeVehicleCount);
     res.json(response.rows[0].count); // return only the count as an object
   } catch (error) {
     console.error("error in fetching total active vehicles", error);
@@ -626,7 +626,7 @@ app.get("/api/get_maintenance", async (req, res) => {
   try {
     const query = `SELECT * FROM maintenancerecords WHERE userid= $1`;
     const result = await con.query(query, [userid]);
-    console.log("Result :", result.rows);
+    // console.log("Result :", result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error({ error: "Error in getting the maintainance record" });
@@ -695,7 +695,7 @@ app.get("/api/get_total_maintenance_vehicles", async (req, res) => {
     const response = await con.query(query, [userid]);
     res.json(response.rows[0].count);
   } catch (error) {
-    console.log("Error in fetching total number of vehicles");
+    // console.log("Error in fetching total number of vehicles");
     res.status(500).json({ error: "Fetching total number of vehicles" });
   }
 });
@@ -862,8 +862,8 @@ const interpretResults = async (
       },
     ],
     model: "llama3-70b-8192",
-    temperature: 0.3,
-    max_tokens: 150,
+    temperature: 0.7,
+    max_tokens: 512,
   });
 
   return completion.choices[0]?.message?.content;
@@ -882,7 +882,7 @@ app.post("/api/processPrompt", async (req, res) => {
 
     // Step 2: Determine the relevant table
     const relevantTable = await determineRelevantTable(prompt, dbStructure);
-
+    console.log("reached here");
     // Step 3: Extract content from the relevant table
     const tableContent = await extractTableContent(relevantTable);
 
