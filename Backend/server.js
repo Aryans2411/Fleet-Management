@@ -662,17 +662,15 @@ app.post("/api/maintenanceregister", async (req, res) => {
         .json({ error: "Please select any inactive vehicle" });
     }
 
-    const query = `INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,nextduedate,remarks)
-    VALUES ($1,$2,$3,$4,$5,$6,$7)
+    const query = `INSERT INTO maintenancerecords(userid,vehicleid,maintenancetype,cost,maintenancedate,remarks)
+    VALUES ($1,$2,$3,$4,$5,$6)
     RETURNING recordid`;
-    const nextduedate = null;
     const result = await con.query(query, [
       userid,
       vehicleid,
       maintenancetype,
       cost,
       maintenancedate,
-      nextduedate,
       remarks,
     ]);
     // console.log(result.rows[0].recordid);
