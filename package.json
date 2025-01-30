@@ -11,6 +11,7 @@
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.7",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "cra-template": "1.2.0",
     "dialog": "^0.3.1",
     "express": "^4.21.2",
@@ -29,6 +30,7 @@
     "react-leaflet": "^4.2.1",
     "react-router-dom": "^7.1.1",
     "react-scripts": "5.0.1",
+    "react-spring": "^9.7.5",
     "tw-elements-react": "^1.0.0-alpha-end",
     "web-vitals": "^2.1.4"
   },

@@ -75,7 +75,7 @@ app.post("/formPost", async (req, res) => {
     // console.log("Executing query with email:", email); // Debug log
     const result = await con.query(checkQuery, [email]);
 
-    console.log("Query result:", result.rows.length); // Debug log
+    //  console.log("Query result:", result.rows.length); // Debug log
 
     if (result.rows.length === 0) {
       console.error("User does not exist in the database");
@@ -96,13 +96,13 @@ app.post("/formPost", async (req, res) => {
 
     // console.log("reached here");
     // Route to the home page if credentials are valid
-    //console.log("User authenticated successfully:", email);
+    // console.log("User authenticated successfully:", email);
     emailid = email;
     const query = "SELECT userid FROM users WHERE email=$1";
     const uuid = await con.query(query, [emailid]);
 
     userid = uuid.rows[0].userid;
-    console.log(userid);
+    // console.log(userid);
     // console.log(uuid.rows[0].userid);
     res.status(200).json({ message: "Login successful" });
   } catch (err) {
@@ -114,7 +114,7 @@ app.post("/formPost", async (req, res) => {
 //sign up controller
 app.post("/signUpPost", async (req, res) => {
   try {
-    console.log("Sign-up form submitted:", req.body);
+    //console.log("Sign-up form submitted:", req.body);
 
     const { name, email, password, phonenumber } = req.body;
 
@@ -151,7 +151,7 @@ app.post("/signUpPost", async (req, res) => {
 
     await con.query(query, values);
 
-    console.log("New user created successfully:", email);
+    // console.log("New user created successfully:", email);
     res.status(201).json({ message: "User registered successfully" });
   } catch (err) {
     console.error("Error processing sign-up:", err);
@@ -174,7 +174,7 @@ app.get("/api/get_totaldriver", async (req, res) => {
     const response = await con.query(query, [userid]);
     res.json(response.rows[0].count);
   } catch (error) {
-    console.log("Error in fetching total number of drivers");
+    // console.log("Error in fetching total number of drivers");
     res.status(500).json({ error: "Fetching total number of drivers" });
   }
 });
@@ -187,7 +187,7 @@ app.get("/api/get_totalvehicles", async (req, res) => {
     const response = await con.query(query, [userid]);
     res.json(response.rows[0].count);
   } catch (error) {
-    console.log("Error in fetching total number of vehicles");
+    //console.log("Error in fetching total number of vehicles");
     res.status(500).json({ error: "Fetching total number of vehicles" });
   }
 });
@@ -272,8 +272,8 @@ app.post("/api/driver_register", async (req, res) => {
     // Destructure inputs from the request body
     const { name, earningperkm, licensenumber, phonenumber } = req.body;
     // console.log(req.body);
-    //console.log(req.body.licensenumber);
-    //console.log(req.body.phonenumber);
+    // console.log(req.body.licensenumber);
+    // console.log(req.body.phonenumber);
     // Validate required fields
     if (!name || !licensenumber || !phonenumber) {
       return res.status(400).json({
@@ -564,6 +564,7 @@ app.get("/api/get_totalrevenue", async (req, res) => {
     res.status(500).json({ error: "Error in fetching the total revenue" });
   }
 });
+
 app.get("/api/get_totalcost", async (req, res) => {
   try {
     const petrolprice = 102;
@@ -574,7 +575,12 @@ app.get("/api/get_totalcost", async (req, res) => {
     WHERE userid=$1
     `;
     const result = await con.query(query1, [userid]);
-    const sum = parseInt(result.rows[0].sum);
+    const sum = isNaN(parseInt(result.rows[0].sum))
+      ? 0
+      : parseInt(result.rows[0].sum);
+
+    console.log("this is sum ", sum);
+    //this query2 is for fuel consumption cost
     const query2 = `
     SELECT 
     SUM(
@@ -592,6 +598,7 @@ app.get("/api/get_totalcost", async (req, res) => {
       `;
     const result2 = await con.query(query2, [petrolprice, dieselprice, userid]);
     const netamount1 = parseInt(result2.rows[0].net_amount);
+    console.log("netamount1", netamount1);
     const query3 = `
       SELECT 
       SUM(t.distancetravelled * d.earningperkm) AS net_earning
@@ -601,10 +608,12 @@ app.get("/api/get_totalcost", async (req, res) => {
       `;
     const result3 = await con.query(query3, [userid]);
     const netamount2 = parseInt(result3.rows[0].net_earning);
+    console.log("this is netamount2", netamount2);
     // console.log(netamount2);
     // console.log(netamount1);
     // console.log("result",result.rows[0].sum,result2.rows[0].net_amount," ",result3.rows[0].net_earning);
     const cost = sum + netamount1 + netamount2;
+    //console.log(cost);
     res.json(cost);
   } catch (error) {
     console.error({ error: "Error in fetching the total cost" });
@@ -705,7 +714,7 @@ app.get("/api/get_total_maintenance_vehicles", async (req, res) => {
 app.post("/api/set_maintenance_date", async (req, res) => {
   try {
     const { nextduedate, registrationnumber } = req.body;
-    console.log("request body: ", req.body);
+    //console.log("request body: ", req.body);
     const query = `UPDATE vehicles SET nextduedate = $1
                   WHERE registrationnumber = $2`;
     const response = await con.query(query, [nextduedate, registrationnumber]);
@@ -885,7 +894,7 @@ app.post("/api/processPrompt", async (req, res) => {
 
     // Step 2: Determine the relevant table
     const relevantTable = await determineRelevantTable(prompt, dbStructure);
-    console.log("reached here");
+    //  console.log("reached here");
     // Step 3: Extract content from the relevant table
     const tableContent = await extractTableContent(relevantTable);
 
@@ -896,7 +905,7 @@ app.post("/api/processPrompt", async (req, res) => {
       relevantTable,
       tableContent
     );
-    console.log("Generated SQL Query:", sqlQuery);
+    // console.log("Generated SQL Query:", sqlQuery);
 
     // Step 5: Execute the query
     const sqlQueryTrim = sqlQuery.replace(/^```|```$/g, "").trim();
@@ -910,7 +919,7 @@ app.post("/api/processPrompt", async (req, res) => {
       relevantTable,
       tableContent
     );
-    console.log(interpretation);
+    //console.log(interpretation);
     // Send response
     res.json({
       response: interpretation,
@@ -924,9 +933,10 @@ app.post("/api/processPrompt", async (req, res) => {
   }
 });
 
+//api call to get driver cost
 app.get("/api/driver_cost", async (req, res) => {
   try {
-    console.log("here");
+    // console.log("here");
     const query = `SELECT d.name, SUM(t.revenue) AS total_earning
                     FROM Drivers d
                     JOIN Trips t ON d.driverid = t.driverid
@@ -937,11 +947,132 @@ app.get("/api/driver_cost", async (req, res) => {
                      `;
 
     const result = await con.query(query, [userid]);
-    console.log(result.rows);
+    //  console.log(result.rows);
     res.json(result.rows);
   } catch (error) {
     console.error({ error: "Error getting data record" });
     res.status(400).json({ error: "Error getting data record" });
+  }
+});
+
+//api to get month revenue
+app.get("/api/month_revenue", async (req, res) => {
+  try {
+    const query1 = `
+      WITH months AS (
+          -- List all 12 months
+          SELECT generate_series(1, 12) AS month_number
+      ),
+      revenue_data AS (
+          SELECT 
+              EXTRACT(MONTH FROM t.StartTime) AS month_number,  -- Extract the month number from StartTime
+              SUM(t.revenue) AS total_revenue  -- Directly sum revenue from Trips table
+          FROM 
+              Trips t
+          WHERE 
+              t.TripStatus = 'Scheduled'  -- Only consider scheduled trips
+              AND t.userid = $1  -- Filter by specific user ID
+          GROUP BY 
+              EXTRACT(MONTH FROM t.StartTime)  -- Group by month number
+      )
+      SELECT 
+          TO_CHAR(TO_DATE(m.month_number::TEXT, 'MM'), 'FMMonth') AS month_name,  -- Converts month number to month name
+          COALESCE(r.total_revenue, 0) AS total_revenue  -- If no revenue, show 0
+      FROM 
+          months m
+      LEFT JOIN 
+          revenue_data r ON m.month_number = r.month_number  -- Left join to include all months, even with 0 revenue
+      ORDER BY 
+          m.month_number;  -- Sort by month number
+    `;
+
+    const result = await con.query(query1, [userid]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error({ error: "Error in getting record", details: error.message });
+    res.status(500).json({ error: "Error in getting record" });
+  }
+});
+//api to get month cost
+app.get("/api/month_cost", async (req, res) => {
+  try {
+    const petrolprice = 102;
+    const dieselprice = 75;
+
+    const query1 = `
+    WITH months AS (
+        -- List all 12 months
+        SELECT generate_series(1, 12) AS month_number
+    ),
+    maintenance_data AS (
+        SELECT 
+            EXTRACT(MONTH FROM m.maintenancedate) AS month_number,
+            CAST(SUM(m.cost) AS INTEGER) AS total_maintenance_cost  
+        FROM 
+            MaintenanceRecords m
+        WHERE 
+            m.userid = $1  -- Use $1 for user ID
+        GROUP BY 
+            EXTRACT(MONTH FROM m.maintenancedate)  
+    ),
+    trip_fuel_cost AS (
+        SELECT
+            EXTRACT(MONTH FROM t.starttime) AS month_number,
+            CAST(SUM(
+                (t.distancetravelled / NULLIF(v.idealmileage, 1)) * 
+                CASE 
+                    WHEN v.fueltype = 'Petrol' THEN $2  -- Use $2 for petrol price
+                    WHEN v.fueltype = 'Diesel' THEN $3  -- Use $3 for diesel price
+                    ELSE 0
+                END
+            ) AS INTEGER) AS total_fuel_cost  
+        FROM 
+            Trips t
+        JOIN 
+            Vehicles v ON t.vehicleid = v.vehicleid
+        WHERE 
+            t.userid = $1  -- Use $1 for user ID
+        GROUP BY 
+            EXTRACT(MONTH FROM t.starttime)  
+    ),
+    driver_earnings AS (
+        SELECT
+            EXTRACT(MONTH FROM t.starttime) AS month_number,
+            CAST(SUM(t.distancetravelled * d.earningperkm) AS INTEGER) AS total_driver_earnings  
+        FROM 
+            Trips t
+        JOIN 
+            Drivers d ON t.driverid = d.driverid
+        WHERE 
+            t.userid = $1  -- Use $1 for user ID
+        GROUP BY 
+            EXTRACT(MONTH FROM t.starttime)  
+    )
+    SELECT 
+        TO_CHAR(TO_DATE(m.month_number::TEXT, 'MM'), 'FMMonth') AS month_name,  
+        CAST(
+            COALESCE(maintenance_data.total_maintenance_cost, 0) + 
+            COALESCE(trip_fuel_cost.total_fuel_cost, 0) + 
+            COALESCE(driver_earnings.total_driver_earnings, 0) 
+            AS INTEGER
+        ) AS total_cost  
+    FROM 
+        months m
+    LEFT JOIN 
+        maintenance_data ON m.month_number = maintenance_data.month_number  
+    LEFT JOIN 
+        trip_fuel_cost ON m.month_number = trip_fuel_cost.month_number  
+    LEFT JOIN 
+        driver_earnings ON m.month_number = driver_earnings.month_number  
+    ORDER BY 
+        m.month_number;  
+    `;
+
+    const result = await con.query(query1, [userid, petrolprice, dieselprice]);
+    res.json(result.rows); // Return the result in the same month-wise format
+  } catch (error) {
+    console.error({ error: "Error in getting month-wise cost" });
+    res.status(500).json({ error: "Error in getting month-wise cost" });
   }
 });
 

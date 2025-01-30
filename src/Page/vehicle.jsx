@@ -587,9 +587,9 @@ export default function Vehicle() {
                                 )}
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {vehicle.nextduedate === null ?(
-                                  null
-                              ):(vehicle.nextduedate)}
+                              {vehicle.nextduedate === null
+                                ? null
+                                : vehicle.nextduedate}
                             </td>
                           </tr>
                         ))
@@ -610,23 +610,26 @@ export default function Vehicle() {
             </div>
             <div>
               <h3 className="text-white">Vehicle Locations</h3>
-              <MapContainer
-                className="w-full max-w-4xl h-96 rounded-lg shadow-md"
-                center={[12.9716, 77.5946]}
-                zoom={12}
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {vehicleInfo.map((mark, index) => (
-                  <Marker
-                    key={index}
-                    position={[mark.latitude, mark.longitude]}
-                    icon={customIcon}
-                  ></Marker>
-                ))}
-              </MapContainer>
+              <div className="flex items-center justify-center w-full">
+                {" "}
+                <MapContainer
+                  className="w-full h-96 rounded-lg shadow-md"
+                  center={[12.9716, 77.5946]}
+                  zoom={12}
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  {vehicleInfo.map((mark, index) => (
+                    <Marker
+                      key={index}
+                      position={[mark.latitude, mark.longitude]}
+                      icon={customIcon}
+                    ></Marker>
+                  ))}
+                </MapContainer>
+              </div>
             </div>
           </div>
         </div>

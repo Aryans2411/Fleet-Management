@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 import {
   MapContainer,
@@ -50,7 +51,8 @@ export default function Home() {
   const [totalrevenue, setTotalRevenue] = useState(0);
   const [cost, setCost] = useState(0);
   const [driver_info, setdriver_info] = useState([]);
-  // const [profit,setProfit] = useState(0);
+  const [month_rev, set_month_rev] = useState([]);
+  const [month_cost, set_month_cost] = useState([]);
 
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
@@ -73,6 +75,8 @@ export default function Home() {
     getTotalRevenue();
     getCost();
     get_driver_info();
+    get_month_revenue();
+    get_month_cost();
   }, []);
 
   const customIcon = new L.Icon({
@@ -107,11 +111,11 @@ export default function Home() {
       }
       const data = await response.json();
       setDriverFreq(data);
-      //  console.log(driversFreq);
     } catch (error) {
       console.error("Failed to fetch drivers frequency:", error.message);
     }
   };
+
   const vehiclesnumber = async () => {
     try {
       const response = await fetch(
@@ -143,12 +147,11 @@ export default function Home() {
 
       const data = await response.json();
       setActvehicle(data);
-      // console.log("total vehicles", vehiclesFreq);
-      // console.log("active vehicle", actvvehicle);
     } catch (error) {
       console.error("Failed to fetch active vehicles", error);
     }
   };
+
   const getCost = async () => {
     try {
       const response = await fetch("http://localhost:4000/api/get_totalcost", {
@@ -163,6 +166,7 @@ export default function Home() {
       console.error("Failed to fetch cost", error);
     }
   };
+
   const maintenance_vehicle = async () => {
     try {
       const response = await fetch(
@@ -176,8 +180,6 @@ export default function Home() {
 
       const data = await response.json();
       setmainv(data);
-      console.log("total vehicles", vehiclesFreq);
-      console.log("active vehicle", actvvehicle);
     } catch (error) {
       console.error("Failed to fetch active vehicles", error);
     }
@@ -194,12 +196,12 @@ export default function Home() {
       }
 
       const data = await response.json();
-      console.log(data);
       setTripInfo(data);
     } catch (error) {
       console.error("Failed to fetch trips:", error.message);
     }
   };
+
   const getTotalRevenue = async () => {
     const response = await fetch("http://localhost:4000/api/get_totalrevenue", {
       method: "GET",
@@ -209,14 +211,13 @@ export default function Home() {
     }
     try {
       const data = await response.json();
-      console.log(data);
       setTotalRevenue(data);
     } catch (error) {
       console.error("Failed to fetch trips:", error.status);
     }
   };
+
   const RoutingMachine = ({ from, to, color = "#0000ff" }) => {
-    // Added color prop with default value
     const map = useMap();
     const [routingControl, setRoutingControl] = useState(null);
 
@@ -224,12 +225,10 @@ export default function Home() {
       if (!map || !from || !to) return;
 
       try {
-        // Remove existing routing control if it exists
         if (routingControl) {
           map.removeControl(routingControl);
         }
 
-        // Create new routing control with dynamic color
         const control = L.Routing.control({
           waypoints: [L.latLng(from[0], from[1]), L.latLng(to[0], to[1])],
           routeWhileDragging: false,
@@ -238,38 +237,30 @@ export default function Home() {
           fitSelectedRoutes: false,
           showAlternatives: false,
           lineOptions: {
-            styles: [{ color: color, opacity: 0.6, weight: 4 }], // Use dynamic color here
+            styles: [{ color: color, opacity: 0.6, weight: 4 }],
           },
-          createMarker: () => null, // Disable default markers
+          createMarker: () => null,
         })
-          .on("routingerror", function (e) {
-            console.log("Routing error:", e);
-          })
+          .on("routingerror", function (e) {})
           .addTo(map);
 
         setRoutingControl(control);
 
-        // Cleanup function
         return () => {
           if (map && control) {
             try {
               control.getPlan().setWaypoints([]);
               map.removeControl(control);
-              // Clean up any remaining routing layers
               map.eachLayer((layer) => {
                 if (layer._routing) {
                   map.removeLayer(layer);
                 }
               });
-            } catch (error) {
-              console.log("Cleanup error:", error);
-            }
+            } catch (error) {}
           }
         };
-      } catch (error) {
-        console.log("Routing control error:", error);
-      }
-    }, [map, from, to, color]); // Added color to dependency array
+      } catch (error) {}
+    }, [map, from, to, color]);
 
     return null;
   };
@@ -284,52 +275,86 @@ export default function Home() {
 
       const data = await response.json();
       setdriver_info(data);
-      console.log(data);
     } catch (error) {
       console.error("Failed to fetch active vehicles", error);
     }
   };
+
+  const get_month_revenue = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/month_revenue", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching monthly data list");
+      }
+
+      const data = await response.json();
+      set_month_rev(data);
+    } catch (error) {
+      console.error("Failed to fetch monthly data", error.message);
+    }
+  };
+
+  const get_month_cost = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/api/month_cost", {
+        method: "GET",
+      });
+
+      if (!response.ok) {
+        throw new Error("Error fetching monthly data list");
+      }
+
+      const data = await response.json();
+      set_month_cost(data);
+    } catch (error) {
+      console.error("Failed to fetch monthly data", error.message);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col">
       <Navigation />
-      <div className="mt-6 p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="mt-6 p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {/* Dashboard Cards */}
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Profit</h3>
             <p className="text-3xl font-bold text-green-400">
-              {totalrevenue - cost}
+              ₹{totalrevenue - cost}
             </p>
           </div>
         </div>
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Revenue</h3>
-            <p className="text-3xl font-bold text-blue-400">₹ {totalrevenue}</p>
+            <p className="text-3xl font-bold text-blue-400">₹{totalrevenue}</p>
           </div>
         </div>
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Cost</h3>
             <p className="text-3xl font-bold text-red-400">
-              {cost === null ? 0 : cost}
+              ₹{cost === null ? 0 : cost}
             </p>
           </div>
         </div>
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Total Vehicles</h3>
             <p className="text-3xl font-bold text-yellow-400">{vehiclesFreq}</p>
           </div>
         </div>
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Active Vehicles</h3>
             <p className="text-3xl font-bold text-teal-400">{actvvehicle}</p>
           </div>
         </div>
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">
               Vehicles in Maintenance
             </h3>
@@ -337,79 +362,209 @@ export default function Home() {
           </div>
         </div>
         <div className="card">
-          <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+          <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
             <h3 className="text-xl font-semibold mb-2">Unused Vehicles</h3>
             <p className="text-3xl font-bold text-purple-400">
               {vehiclesFreq - actvvehicle - maintv}
             </p>
           </div>
         </div>
-        <div className="p-6 bg-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
+        <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
           <h3 className="text-xl font-semibold mb-2">Drivers</h3>
           <p className="text-3xl font-bold text-blue-400">{driversFreq}</p>
         </div>
       </div>
       <div className="grid grid-cols-2 grid-rows-2 min-h-screen gap-6 p-4">
-        <div className="bg-gradient-to-r from-red-200 to-pink-200 shadow-lg hover:scale-105 transition-transform cursor-pointer p-6 rounded-lg max-w-full">
-          <Doughnut
-            data={{
-              labels: [
-                "Active Vehicles",
-                "Unused Vehicles",
-                "Vehicles Under Maintenance",
-              ],
-              datasets: [
-                {
-                  data: [
-                    actvvehicle,
-                    vehiclesFreq - actvvehicle - maintv,
-                    maintv,
+        {/* Line chart div: Full width on top */}
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer col-span-2 rounded-2xl p-8 min-h-[150px]">
+          <div className="w-full h-full">
+            {month_rev.length > 0 ? (
+              <Line
+                data={{
+                  labels: month_rev.map((rev) => rev.month_name),
+                  datasets: [
+                    {
+                      label: "Revenue",
+                      data: month_rev.map((rev) => rev.total_revenue),
+                      backgroundColor: "rgba(54, 162, 235, 0.2)", // Softer blue fill
+                      borderColor: "#36A2EB",
+                      borderWidth: 3,
+                      pointBackgroundColor: "#36A2EB",
+                      pointBorderColor: "#fff",
+                      pointHoverBackgroundColor: "#fff",
+                      pointHoverBorderColor: "#36A2EB",
+                      fill: false, // No filling for the Revenue line
+                    },
+                    {
+                      label: "Cost",
+                      data: month_cost.map((cst) => cst.total_cost),
+                      backgroundColor: "rgba(255, 99, 132, 0.2)", // Softer red fill
+                      borderColor: "#FF6384",
+                      borderWidth: 3,
+                      pointBackgroundColor: "#FF6384",
+                      pointBorderColor: "#fff",
+                      pointHoverBackgroundColor: "#fff",
+                      pointHoverBorderColor: "#FF6384",
+                      fill: true, // Fill the area under the Cost line
+                    },
                   ],
-                  backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-                  hoverBackgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-                  borderWidth: 0,
-                  hoverOffset: 10,
-                },
-              ],
-            }}
-            options={{
-              plugins: {
-                legend: {
-                  position: "right",
-                  labels: {
-                    color: "#4A5568",
-                    font: {
-                      size: 14,
-                      family: "Inter, sans-serif",
-                      weight: "500",
+                }}
+                options={{
+                  plugins: {
+                    legend: {
+                      position: "top",
+                      labels: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 16,
+                          family: "Inter, sans-serif",
+                          weight: "600",
+                        },
+                        boxWidth: 20,
+                        padding: 15,
+                      },
+                    },
+                    tooltip: {
+                      enabled: true,
+                      backgroundColor: "#2D3748",
+                      titleColor: "#F7FAFC",
+                      bodyColor: "#F7FAFC",
+                      borderColor: "#4A5568",
+                      borderWidth: 1,
+                      cornerRadius: 6,
+                      padding: 12,
                     },
                   },
-                },
-                tooltip: {
-                  enabled: true,
-                  backgroundColor: "#2D3748",
-                  titleColor: "#F7FAFC",
-                  bodyColor: "#F7FAFC",
-                  borderColor: "#4A5568",
-                  borderWidth: 1,
-                  cornerRadius: 6,
-                  padding: 12,
-                },
-              },
-              animation: {
-                animateScale: true,
-                animateRotate: true,
-              },
-              responsive: true,
-              maintainAspectRatio: false,
-              cutout: "60%",
-            }}
-          />
+                  scales: {
+                    x: {
+                      ticks: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 14,
+                          family: "Inter, sans-serif",
+                        },
+                      },
+                      grid: {
+                        display: false,
+                      },
+                    },
+                    y: {
+                      ticks: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 14,
+                          family: "Inter, sans-serif",
+                        },
+                      },
+                      grid: {
+                        color: "rgba(255, 255, 255, 0.1)",
+                      },
+                    },
+                  },
+                  animation: {
+                    duration: 1500,
+                    easing: "easeInOutQuart",
+                  },
+                  responsive: true,
+                  maintainAspectRatio: false,
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400 text-lg font-semibold">
+                  No Monthly info available
+                </p>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="bg-gradient-to-r from-purple-200 to-indigo-200 shadow-lg hover:scale-105 transition-transform cursor-pointer rounded-xl p-6">
+        {/* Bottom divs: Two columns */}
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+          <div className="w-full h-full">
+            {actvvehicle || vehiclesFreq || maintv ? (
+              <Bar
+                data={{
+                  labels: [
+                    "Active Vehicles",
+                    "Unused Vehicles",
+                    "Vehicles Under Maintenance",
+                  ],
+                  datasets: [
+                    {
+                      label: "Vehicle Numbers",
+                      data: [
+                        actvvehicle,
+                        vehiclesFreq - actvvehicle - maintv,
+                        maintv,
+                      ],
+                      backgroundColor: [
+                        "rgba(54, 162, 235, 0.6)", // Softer blue fill (same as line chart)
+                        "rgba(255, 99, 132, 0.6)", // Softer red fill (same as line chart)
+                        "rgba(153, 102, 255, 0.6)", // Softer purple fill (new color for maintenance)
+                      ],
+                      hoverBackgroundColor: [
+                        "rgba(54, 162, 235, 0.9)", // Brighter blue hover
+                        "rgba(255, 99, 132, 0.9)", // Brighter red hover
+                        "rgba(153, 102, 255, 0.9)", // Brighter purple hover
+                      ],
+                      borderColor: [
+                        "#36A2EB", // Same border color as blue in the line chart
+                        "#FF6384", // Same border color as red in the line chart
+                        "#9966FF", // Purple border for maintenance
+                      ],
+                      borderWidth: 2, // Slight border for depth
+                    },
+                  ],
+                }}
+                options={{
+                  plugins: {
+                    legend: {
+                      position: "top",
+                      labels: {
+                        color: "#F7FAFC", // Light text for contrast
+                        font: {
+                          size: 16,
+                          family: "Inter, sans-serif",
+                          weight: "600",
+                        },
+                        boxWidth: 20,
+                        padding: 15,
+                      },
+                    },
+                    tooltip: {
+                      enabled: true,
+                      backgroundColor: "#2D3748", // Dark background for tooltip
+                      titleColor: "#F7FAFC", // Light text in tooltip
+                      bodyColor: "#F7FAFC", // Light text in tooltip
+                      borderColor: "#4A5568", // Dark border color
+                      borderWidth: 1,
+                      cornerRadius: 6,
+                      padding: 12,
+                    },
+                  },
+                  animation: {
+                    duration: 1500, // Smooth animation
+                    easing: "easeInOutQuart",
+                  },
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  cutout: "60%", // Inner cutout for donut effect
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400 text-lg font-semibold">
+                  No Vehicle Info Available
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           {driver_info.length > 0 ? (
-            <Pie
+            <Doughnut
               data={{
                 labels: driver_info.map((driver) => driver.name),
                 datasets: [
@@ -435,16 +590,15 @@ export default function Home() {
                     ],
                     borderWidth: 2,
                     borderColor: "#FFFFFF",
-                    hoverOffset: 10,
                   },
                 ],
               }}
               options={{
                 plugins: {
                   legend: {
-                    position: "right",
+                    position: "top",
                     labels: {
-                      color: "#4A5568",
+                      color: "#F7FAFC",
                       font: {
                         size: 14,
                         family: "Inter, sans-serif",
@@ -473,122 +627,14 @@ export default function Home() {
             />
           ) : (
             <div className="flex items-center justify-center h-full">
-              <p className="text-gray-700 text-lg font-medium">
+              <p className="text-gray-400 text-lg font-medium">
                 No driver data available.
               </p>
             </div>
           )}
         </div>
-        <div className="bg-red-200 shadow-lg hover:scale-105 transition-transform cursor-pointer">
-          <Line
-            data={{
-              labels: [
-                "Active Vehicles",
-                "Unused Vehicles",
-                "Vehicles Under Maintenance",
-              ],
-              datasets: [
-                {
-                  label: "Revenue",
-                  data: [totalrevenue, totalrevenue * 0.8, totalrevenue * 0.9], // Multiple points
-                  fill: false,
-                  borderColor: "#FF6384",
-                  backgroundColor: "#FF6384",
-                  tension: 0.4,
-                  borderWidth: 2,
-                  pointBackgroundColor: "#FF6384",
-                  pointBorderColor: "#FF6384",
-                  pointHoverRadius: 6,
-                  pointRadius: 4,
-                },
-                {
-                  label: "Cost",
-                  data: [cost, cost * 0.7, cost * 0.85], // Multiple points
-                  fill: false,
-                  borderColor: "#36A2EB", // Different color for Cost
-                  backgroundColor: "#36A2EB",
-                  tension: 0.4,
-                  borderWidth: 2,
-                  pointBackgroundColor: "#36A2EB",
-                  pointBorderColor: "#36A2EB",
-                  pointHoverRadius: 6,
-                  pointRadius: 4,
-                },
-                {
-                  label: "Profit",
-                  data: [
-                    totalrevenue - cost,
-                    totalrevenue * 0.8 - cost * 0.7,
-                    totalrevenue * 0.9 - cost * 0.85,
-                  ], // Multiple points
-                  fill: false,
-                  borderColor: "#FFCE56", // Different color for Profit
-                  backgroundColor: "#FFCE56",
-                  tension: 0.4,
-                  borderWidth: 2,
-                  pointBackgroundColor: "#FFCE56",
-                  pointBorderColor: "#FFCE56",
-                  pointHoverRadius: 6,
-                  pointRadius: 4,
-                },
-              ],
-            }}
-            options={{
-              plugins: {
-                legend: {
-                  position: "right",
-                  labels: {
-                    color: "#4A5568",
-                    font: {
-                      size: 14,
-                      family: "Inter, sans-serif",
-                      weight: "500",
-                    },
-                  },
-                },
-                tooltip: {
-                  enabled: true,
-                  backgroundColor: "#2D3748",
-                  titleColor: "#F7FAFC",
-                  bodyColor: "#F7FAFC",
-                  borderColor: "#4A5568",
-                  borderWidth: 1,
-                  cornerRadius: 6,
-                  padding: 12,
-                },
-              },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  grid: {
-                    color: "rgba(0, 0, 0, 0.1)",
-                  },
-                  ticks: {
-                    color: "#4A5568",
-                    font: {
-                      family: "Inter, sans-serif",
-                    },
-                  },
-                },
-                x: {
-                  grid: {
-                    color: "rgba(0, 0, 0, 0.1)",
-                  },
-                  ticks: {
-                    color: "#4A5568",
-                    font: {
-                      family: "Inter, sans-serif",
-                    },
-                  },
-                },
-              },
-              responsive: true,
-              maintainAspectRatio: false,
-            }}
-          />
-        </div>
-        <div className="bg-red-200 shadow-lg hover:scale-105 transition-transform cursor-pointer"></div>
       </div>
+
       <div className="flex justify-center  mb-12 mt-6 ">
         <MapContainer
           style={{ height: "75vh", width: "95%" }}
