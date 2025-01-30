@@ -223,15 +223,15 @@ export default function Vehicle() {
   };
 
   return (
-    <div className="bg-gray-900   w-full h-[2000px]">
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black  w-full  min-h-screen">
       <Navigation />
-      <div className="mx-auto max-w-7xl w-full">
-        <div className="bg-gray-900 py-10">
+      <div className="mx-auto max-w-7xl w-full shadow-2xl hover:shadow-blue-500 transition-shadow duration-300">
+        <div className="bg-gray-900 border border-gray-700 py-10 mt-2 rounded-lg mb-2">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
-                <h1 className="text-base font-semibold text-white">Vehicles</h1>
-                <p className="mt-2 text-sm text-gray-300">
+                <h1 className="text-base font-bold text-white">Vehicles</h1>
+                <p className="mt-2 text-lg text-gray-300">
                   A list of all the vehicles in your account including details
                   like make, registration number, and location.
                 </p>
@@ -250,7 +250,7 @@ export default function Vehicle() {
                 <button
                   type="button"
                   onClick={() => setIsFormOpen(true)}
-                  className="block rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400 focus:outline-none"
+                  className="block rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-400 transition hover:-translate-y-1 focus:outline-none"
                 >
                   Add Vehicle
                 </button>
@@ -486,7 +486,7 @@ export default function Vehicle() {
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               <button
-                                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
+                                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600  transition hover:-translate-x-1"
                                 onClick={() => handleClick(vehicle.vehicleid)}
                               >
                                 Maintenance

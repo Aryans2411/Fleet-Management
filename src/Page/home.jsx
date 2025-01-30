@@ -15,7 +15,7 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import "leaflet-routing-machine";
 import "leaflet-routing-machine/dist/leaflet-routing-machine.css";
-import { Bar, Doughnut, Line, Pie } from "react-chartjs-2";
+import { Bar, Doughnut, Line, Pie, Radar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   ArcElement,
@@ -27,6 +27,7 @@ import {
   LinearScale,
   PointElement,
   LineElement,
+  RadialLinearScale,
 } from "chart.js";
 
 // Register the components you need, including CategoryScale, BarElement, and LinearScale
@@ -39,7 +40,8 @@ ChartJS.register(
   CategoryScale,
   BarElement,
   LineElement,
-  LinearScale
+  LinearScale,
+  RadialLinearScale
 );
 
 export default function Home() {
@@ -393,10 +395,10 @@ export default function Home() {
           <p className="text-3xl font-bold text-blue-400">{driversFreq}</p>
         </div>
       </div>
-      <div className="grid grid-cols-3 grid-rows-2 min-h-screen gap-6 p-4">
+      <div className="grid grid-cols-2 grid-rows-3 min-h-screen gap-6 p-4">
         {/* Line chart div: Full width on top */}
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer col-span-3 rounded-2xl p-8 min-h-[150px]">
-          <div className="w-full h-full">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer col-span-2 rounded-2xl p-8 min-h-[250px]">
+          <div className="w-full h-full min-h-[350px]">
             {month_rev.length > 0 ? (
               <Line
                 data={{
@@ -474,14 +476,14 @@ export default function Home() {
                   scales: {
                     x: {
                       ticks: {
-                        color: "#F7FAFC",
+                        color: "white",
                         font: {
                           size: 14,
-                          family: "Inter, sans-serif",
+                          family: "  sans-serif",
                         },
                       },
                       grid: {
-                        display: false,
+                        display: true,
                       },
                     },
                     y: {
@@ -489,7 +491,7 @@ export default function Home() {
                         color: "#F7FAFC",
                         font: {
                           size: 14,
-                          family: "Inter, sans-serif",
+                          family: "sans-serif",
                         },
                       },
                       grid: {
@@ -498,8 +500,13 @@ export default function Home() {
                     },
                   },
                   animation: {
-                    duration: 1500,
-                    easing: "easeInOutQuart",
+                    tension: {
+                      duration: 1500,
+                      easing: "easeInOutQuart",
+                      from: 0.3,
+                      to: 0.24,
+                      loop: true,
+                    },
                   },
                   responsive: true,
                   maintainAspectRatio: false,
@@ -515,7 +522,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom divs: Two columns */}
         <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           <div className="w-full h-full">
             {actvvehicle || vehiclesFreq || maintv ? (
@@ -528,7 +534,7 @@ export default function Home() {
                   ],
                   datasets: [
                     {
-                      label: "Vehicle Numbers",
+                      label: ["Active Vehicle"],
                       data: [
                         actvvehicle,
                         vehiclesFreq - actvvehicle - maintv,
@@ -556,7 +562,16 @@ export default function Home() {
                 options={{
                   plugins: {
                     legend: {
-                      display: false,
+                      position: "top",
+                      labels: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 16,
+                          weight: "600",
+                        },
+                        boxWidth: 20,
+                        padding: 15,
+                      },
                     },
                     tooltip: {
                       enabled: true,
@@ -575,7 +590,32 @@ export default function Home() {
                   },
                   responsive: true,
                   maintainAspectRatio: false,
-                  cutout: "60%", // Inner cutout for donut effect
+                  scales: {
+                    x: {
+                      ticks: {
+                        color: "white",
+                        font: {
+                          size: 14,
+                          family: "sans-serif",
+                        },
+                      },
+                      grid: {
+                        display: true,
+                      },
+                    },
+                    y: {
+                      ticks: {
+                        color: "white",
+                        font: {
+                          size: 14,
+                          family: "sans-serif",
+                        },
+                      },
+                      grid: {
+                        color: "rgba(255, 255, 255, 0.1)",
+                      },
+                    },
+                  },
                 }}
               />
             ) : (
@@ -639,6 +679,32 @@ export default function Home() {
                       padding: 12,
                     },
                   },
+                  scales: {
+                    x: {
+                      ticks: {
+                        color: "white",
+                        font: {
+                          size: 12,
+                          family: "  sans-serif",
+                        },
+                      },
+                      grid: {
+                        display: true,
+                      },
+                    },
+                    y: {
+                      ticks: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 14,
+                          family: "sans-serif",
+                        },
+                      },
+                      grid: {
+                        color: "rgba(255, 255, 255, 0.1)",
+                      },
+                    },
+                  },
                   animation: {
                     duration: 1500, // Smooth animation
                     easing: "easeInOutQuart",
@@ -660,7 +726,7 @@ export default function Home() {
 
         <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           {driver_info.length > 0 ? (
-            <Doughnut
+            <Pie
               data={{
                 labels: driver_info.map((driver) => driver.name),
                 datasets: [

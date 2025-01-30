@@ -93,17 +93,17 @@ export default function Analytics() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800 text-white">
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white">
       <Navigation />
 
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+      <div className="container mx-auto px-4 py-4">
+        <h1 className="text-4xl font-bold mb-4 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-800 to-indigo-900">
           Predictive Maintenance Analysis
         </h1>
 
         <form
           onSubmit={handleSubmit}
-          className="bg-gray-800/50 backdrop-blur-md p-8 rounded-xl border border-gray-700 shadow-2xl hover:shadow-green-500/10 transition-shadow duration-300"
+          className="bg-gray-800/50   p-8 rounded-xl border border-gray-700 shadow-2xl hover:shadow-blue-500 transition-shadow duration-300"
         >
           <div className="grid md:grid-cols-2 gap-6">
             {/* Registration Number Field */}
@@ -179,7 +179,7 @@ export default function Analytics() {
             <button
               type="submit"
               disabled={isLoading}
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-semibold py-3 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-gradient-to-r from-sky-400 to-indigo-900 hover:bg-linear-to-r hover:from-gray-800 hover:via-blue-700 hover:to-gray-900 text-white font-semibold py-3 px-8 rounded-lg transition  duration-300 transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-allowed"
             >
               {isLoading ? "Processing..." : "Get Maintenance Prediction"}
             </button>

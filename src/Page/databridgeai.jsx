@@ -10,60 +10,63 @@ const ChatGPTClone = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    setMessages([{
-      role: "assistant",
-      content: "Hello! I'm your AI assistant. How can I help you today?",
-    }]);
+    setMessages([
+      {
+        role: "assistant",
+        content: "Hello! I'm your AI assistant. How can I help you today?",
+      },
+    ]);
   }, []);
 
   const handleSend = async () => {
-  if (!input.trim() || isLoading) return;
+    if (!input.trim() || isLoading) return;
 
-  setIsLoading(true);
-  const userMessage = { role: "user", content: input };
-  setMessages(prev => [...prev, userMessage]);
-  setInput("");
+    setIsLoading(true);
+    const userMessage = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
 
-  try {
-    const response = await fetch('http://localhost:4000/api/processPrompt', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ prompt: input.trim() }),
-    });
-    console.log(response);
-    const data = await response.json();
+    try {
+      const response = await fetch("http://localhost:4000/api/processPrompt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt: input.trim() }),
+      });
+      console.log(response);
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.error || 'Failed to get response');
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get response");
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `${data.response}\n\n`,
+          metadata: {
+            query: data.query,
+            relevantTable: data.relevantTable,
+            rawResults: data.rawResults,
+          },
+        },
+      ]);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An error occurred";
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: `⚠️ Error: ${errorMessage}`,
+        },
+      ]);
+    } finally {
+      setIsLoading(false);
     }
-
-    setMessages(prev => [
-      ...prev,
-      {
-        role: "assistant",
-        content: `${data.response}\n\n`,
-        metadata: {
-          query: data.query,
-          relevantTable: data.relevantTable,
-          rawResults: data.rawResults
-        }
-      }
-    ]);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'An error occurred';
-    setMessages(prev => [
-      ...prev,
-      {
-        role: "assistant",
-        content: `⚠️ Error: ${errorMessage}`,
-      }
-    ]);
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   // Animation variants :cite[3]:cite[7]
   const messageVariants = {
@@ -72,7 +75,7 @@ const ChatGPTClone = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black  border border-gray-700">
       <Navigation />
 
       {/* Chat Messages */}
@@ -83,10 +86,16 @@ const ChatGPTClone = () => {
             initial="hidden"
             animate="visible"
             variants={messageVariants}
-            className={`flex gap-4 ${message.role === "user" ? "justify-start" : "justify-start"}`}
+            className={`flex gap-4 ${
+              message.role === "user" ? "justify-start" : "justify-start"
+            }`}
           >
             <div className="mt-2">
-              <div className={`p-2 rounded-lg ${message.role === "user" ? "bg-black" : "bg-blue-600/20"}`}>
+              <div
+                className={`p-2 rounded-lg ${
+                  message.role === "user" ? "bg-black" : "bg-blue-600/20"
+                }`}
+              >
                 {message.role === "user" ? (
                   <BsPerson className="text-lg text-blue-400" />
                 ) : (
@@ -94,10 +103,18 @@ const ChatGPTClone = () => {
                 )}
               </div>
             </div>
-            <div className={`max-w-3xl p-4 rounded-xl backdrop-blur-sm ${message.role === "user" ? "bg-blue-700/30 text-blue-100" : "bg-indigo-700/30 text-indigo-100"}`}>
+            <div
+              className={`max-w-3xl p-4 rounded-xl backdrop-blur-sm ${
+                message.role === "user"
+                  ? "bg-blue-700/30 text-blue-100"
+                  : "bg-indigo-700/30 text-indigo-100"
+              }`}
+            >
               <div className="space-y-2">
-                {message.content.split('\n').map((line, i) => (
-                  <p key={i} className="break-words">{line}</p>
+                {message.content.split("\n").map((line, i) => (
+                  <p key={i} className="break-words">
+                    {line}
+                  </p>
                 ))}
               </div>
             </div>
@@ -129,14 +146,13 @@ const ChatGPTClone = () => {
       {/* Input Area with Gemini-style gradient animation :cite[7] */}
       <div className="p-4 bg-gray-900/30 border-t border-blue-700/30 backdrop-blur-sm">
         <div className="max-w-5xl mx-auto relative">
-          <motion.div
-            whileHover={{ scale: 1.005 }}
-            className="relative"
-          >
+          <motion.div whileHover={{ scale: 1.005 }} className="relative">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+              onKeyDown={(e) =>
+                e.key === "Enter" && !e.shiftKey && handleSend()
+              }
               placeholder="Send a message..."
               className="w-full p-4 pr-12 bg-blue-800/30 rounded-xl text-blue-100 
                        focus:outline-none focus:ring-2 focus:ring-indigo-300
@@ -150,10 +166,12 @@ const ChatGPTClone = () => {
               whileTap={{ scale: 0.9 }}
               onClick={handleSend}
               disabled={isLoading}
-              className={`absolute right-3 bottom-3 p-2 rounded-lg transition-all duration-200
-                ${isLoading 
-                  ? "bg-blue-600/30 text-blue-400 cursor-not-allowed" 
-                  : "bg-indigo-500/80 hover:bg-indigo-400/80 text-white"}
+              className={`absolute right-2 bottom-4 p-2 rounded-lg transition-all duration-200
+                ${
+                  isLoading
+                    ? "bg-blue-600/30 text-blue-400 cursor-not-allowed"
+                    : "bg-indigo-500/80 hover:bg-indigo-400/80 text-white"
+                }
                 ${input.trim() ? "opacity-100" : "opacity-50"}`}
             >
               <FiSend className="text-xl" />

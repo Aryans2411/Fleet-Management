@@ -937,13 +937,10 @@ app.post("/api/processPrompt", async (req, res) => {
 app.get("/api/driver_cost", async (req, res) => {
   try {
     // console.log("here");
-    const query = `SELECT d.name, SUM(t.revenue) AS total_earning
-                    FROM Drivers d
-                    JOIN Trips t ON d.driverid = t.driverid
-                    WHERE d.userid = $1
-                    GROUP BY d.name
-                    ORDER BY total_earning  
-                    limit 5
+    const query = `SELECT d.name ,(t.distancetravelled*d.earningperkm) AS total_earning
+FROM drivers d
+JOIN trips t ON d.driverid=t.driverid
+WHERE t.userid=$1
                      `;
 
     const result = await con.query(query, [userid]);
