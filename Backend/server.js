@@ -1076,6 +1076,65 @@ app.get("/api/month_cost", async (req, res) => {
   }
 });
 
+//api call to get monthwise maintenance data
+app.get("/api/maintenance_cost", async (req, res) => {
+  try {
+    const query1 = `
+    WITH months AS (
+    -- Generate the numbers 1 through 12 for all months
+    SELECT generate_series(1, 12) AS month_number
+),
+maintenance_data AS (
+    SELECT 
+        EXTRACT(MONTH FROM m.maintenancedate) AS month_number,  -- Extract the month number
+        SUM(m.cost) AS total_cost  -- Sum the maintenance cost for each month
+    FROM 
+        MaintenanceRecords m
+    WHERE 
+        m.userid = $1  -- Filter by specific user ID (pass this value as a parameter)
+    GROUP BY 
+        EXTRACT(MONTH FROM m.maintenancedate)
+)
+SELECT 
+    TO_CHAR(TO_DATE(m.month_number::TEXT, 'MM'), 'FMMonth') AS month_name,  -- Convert month number to month name
+    COALESCE(md.total_cost, 0) AS total_maintenance_cost  -- Show 0 if no maintenance cost data
+FROM 
+    months m
+LEFT JOIN 
+    maintenance_data md ON m.month_number = md.month_number  -- Left join to include all months, even those with no data
+ORDER BY 
+    m.month_number;  -- Order by month number
+
+    `;
+
+    const result = await con.query(query1, [userid]);
+    res.json(result.rows); // Return the result in the same month-wise format
+  } catch (error) {
+    console.error({ error: "Error in getting month-wise cost" });
+    res.status(500).json({ error: "Error in getting month-wise cost" });
+  }
+});
+
+//api call to get maintenance cost of vehicles
+app.get("/api/vehicle_maintenance_cost", async (req, res) => {
+  try {
+    const query1 = `
+     SELECT v.registrationnumber,SUM(m.cost)
+FROM maintenancerecords m
+JOIN vehicles v ON v.vehicleid=m.vehicleid
+where v.userid=$1
+GROUP BY v.registrationnumber
+
+    `;
+
+    const result = await con.query(query1, [userid]);
+    res.json(result.rows); // Return the result in the same month-wise format
+  } catch (error) {
+    console.error({ error: "Error in getting month-wise cost" });
+    res.status(500).json({ error: "Error in getting month-wise cost" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is listening on port ${port}`);
 });

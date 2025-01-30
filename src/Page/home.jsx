@@ -53,7 +53,7 @@ export default function Home() {
   const [driver_info, setdriver_info] = useState([]);
   const [month_rev, set_month_rev] = useState([]);
   const [month_cost, set_month_cost] = useState([]);
-
+  const [vehicle_maintenance_cost, set_vehicle_maintenance_cost] = useState([]);
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
     revenue: 0,
@@ -77,6 +77,7 @@ export default function Home() {
     get_driver_info();
     get_month_revenue();
     get_month_cost();
+    get_monthly_maintenance();
   }, []);
 
   const customIcon = new L.Icon({
@@ -314,6 +315,24 @@ export default function Home() {
     }
   };
 
+  const get_monthly_maintenance = async () => {
+    const response = await fetch(
+      "http://localhost:4000/api/vehicle_maintenance_cost",
+      {
+        method: "GET",
+      }
+    );
+    if (!response.ok) {
+      throw new Error("Error in fetching the total revenue");
+    }
+    try {
+      const data = await response.json();
+      set_vehicle_maintenance_cost(data);
+    } catch (error) {
+      console.error("Failed to fetch trips:", error.status);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black min-h-screen flex flex-col">
       <Navigation />
@@ -374,9 +393,9 @@ export default function Home() {
           <p className="text-3xl font-bold text-blue-400">{driversFreq}</p>
         </div>
       </div>
-      <div className="grid grid-cols-2 grid-rows-2 min-h-screen gap-6 p-4">
+      <div className="grid grid-cols-3 grid-rows-2 min-h-screen gap-6 p-4">
         {/* Line chart div: Full width on top */}
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer col-span-2 rounded-2xl p-8 min-h-[150px]">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer col-span-3 rounded-2xl p-8 min-h-[150px]">
           <div className="w-full h-full">
             {month_rev.length > 0 ? (
               <Line
@@ -406,6 +425,23 @@ export default function Home() {
                       pointHoverBackgroundColor: "#fff",
                       pointHoverBorderColor: "#FF6384",
                       fill: true, // Fill the area under the Cost line
+                    },
+                    {
+                      label: "Profit",
+                      data: month_rev.map((rev, index) => {
+                        const cost = month_cost[index]
+                          ? month_cost[index].total_cost
+                          : 0;
+                        return rev.total_revenue - cost;
+                      }),
+                      backgroundColor: "rgba(75, 192, 192, 0.2)", // Lighter teal fill
+                      borderColor: "#4BC0C0", // Teal border
+                      borderWidth: 3,
+                      pointBackgroundColor: "#4BC0C0", // Teal point background color
+                      pointBorderColor: "#fff", // White point border
+                      pointHoverBackgroundColor: "#fff", // White point hover background color
+                      pointHoverBorderColor: "#4BC0C0", // Teal point hover border color
+                      fill: true, // Fill the area under the Profit line
                     },
                   ],
                 }}
@@ -520,9 +556,69 @@ export default function Home() {
                 options={{
                   plugins: {
                     legend: {
+                      display: false,
+                    },
+                    tooltip: {
+                      enabled: true,
+                      backgroundColor: "#2D3748", // Dark background for tooltip
+                      titleColor: "#F7FAFC", // Light text in tooltip
+                      bodyColor: "#F7FAFC", // Light text in tooltip
+                      borderColor: "#4A5568", // Dark border color
+                      borderWidth: 1,
+                      cornerRadius: 6,
+                      padding: 12,
+                    },
+                  },
+                  animation: {
+                    duration: 1500, // Smooth animation
+                    easing: "easeInOutQuart",
+                  },
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  cutout: "60%", // Inner cutout for donut effect
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400 text-lg font-semibold">
+                  No Vehicle Info Available
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-lg hover:scale-[1.05] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+          <div className="w-full h-full">
+            {vehicle_maintenance_cost.length > 0 ? (
+              <Bar
+                data={{
+                  labels: vehicle_maintenance_cost.map(
+                    (mst) => mst.registrationnumber
+                  ),
+                  datasets: [
+                    {
+                      label: "Maintenance Cost",
+                      data: vehicle_maintenance_cost.map((mst) => mst.sum),
+                      backgroundColor: [
+                        "rgba(54, 162, 235, 0.6)", // Softer blue fill (same as line chart)
+                        "rgba(255, 99, 132, 0.6)", // Softer red fill (same as line chart)
+                        "rgba(153, 102, 255, 0.6)",
+                      ], // Softer purple fill (new color for maintenance)], // Blue fill for bars
+                      borderColor: [
+                        "rgba(54, 162, 235, 0.9)", // Softer blue fill (same as line chart)
+                        "rgba(255, 99, 132, 0.9)", // Softer red fill (same as line chart)
+                        "rgba(153, 102, 255, 0.9)",
+                      ], // Blue border for bars
+                      borderWidth: 2,
+                    },
+                  ],
+                }}
+                options={{
+                  plugins: {
+                    legend: {
                       position: "top",
                       labels: {
-                        color: "#F7FAFC", // Light text for contrast
+                        color: "#F9FAFB", // Lighter text for contrast
                         font: {
                           size: 16,
                           family: "Inter, sans-serif",
@@ -535,9 +631,9 @@ export default function Home() {
                     tooltip: {
                       enabled: true,
                       backgroundColor: "#2D3748", // Dark background for tooltip
-                      titleColor: "#F7FAFC", // Light text in tooltip
-                      bodyColor: "#F7FAFC", // Light text in tooltip
-                      borderColor: "#4A5568", // Dark border color
+                      titleColor: "#F9FAFB", // Light text in tooltip
+                      bodyColor: "#F9FAFB", // Light text in tooltip
+                      borderColor: "black", // Dark border color
                       borderWidth: 1,
                       cornerRadius: 6,
                       padding: 12,
