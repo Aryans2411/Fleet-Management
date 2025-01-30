@@ -12,6 +12,7 @@ CREATE TABLE Vehicles (
     vehicleid SERIAL PRIMARY KEY,
     userid VARCHAR(100) NOT NULL, -- Foreign key to Users table
     registrationnumber VARCHAR(20) UNIQUE NOT NULL,
+    nextduedate DATE,
     make VARCHAR(50) NOT NULL, -- e.g., Toyota
     latitude NUMERIC(10, 6), -- Assuming precision for latitude
     longitude NUMERIC(10, 6), -- Assuming precision for longitude
@@ -68,7 +69,6 @@ CREATE TABLE MaintenanceRecords (
     maintenancetype VARCHAR(100), -- e.g., Oil Change, Tire Replacement
     cost DECIMAL(10,2),
     maintenancedate DATE,
-    nextduedate DATE,
     remarks TEXT,
     FOREIGN KEY (vehicleid) REFERENCES Vehicles(vehicleid),
 	FOREIGN KEY (userid) REFERENCES users(userid)

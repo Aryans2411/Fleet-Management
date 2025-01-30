@@ -608,7 +608,7 @@ app.get("/api/get_totalcost", async (req, res) => {
       `;
     const result3 = await con.query(query3, [userid]);
     const netamount2 = parseInt(result3.rows[0].net_earning);
-    console.log("this is netamount2", netamount2);
+    // console.log("this is netamount2", netamount2);
     // console.log(netamount2);
     // console.log(netamount1);
     // console.log("result",result.rows[0].sum,result2.rows[0].net_amount," ",result3.rows[0].net_earning);
@@ -714,7 +714,7 @@ app.get("/api/get_total_maintenance_vehicles", async (req, res) => {
 app.post("/api/set_maintenance_date", async (req, res) => {
   try {
     const { nextduedate, registrationnumber } = req.body;
-    //console.log("request body: ", req.body);
+    console.log("request body: ", req.body);
     const query = `UPDATE vehicles SET nextduedate = $1
                   WHERE registrationnumber = $2`;
     const response = await con.query(query, [nextduedate, registrationnumber]);
@@ -909,7 +909,7 @@ app.post("/api/processPrompt", async (req, res) => {
 
     // Step 5: Execute the query
     const sqlQueryTrim = sqlQuery.replace(/^```|```$/g, "").trim();
-    console.log(sqlQueryTrim);
+
     const queryResult = await con.query(sqlQueryTrim);
 
     // Step 6: Interpret results with full context
@@ -1082,7 +1082,6 @@ FROM maintenancerecords m
 JOIN vehicles v ON v.vehicleid=m.vehicleid
 where v.userid=$1
 GROUP BY v.registrationnumber
-
     `;
 
     const result = await con.query(query1, [userid]);
