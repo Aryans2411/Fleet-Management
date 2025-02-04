@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 
 import {
   MapContainer,
@@ -522,7 +524,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800  shadow-sm hover:shadow-blue-400 hover:scale-[1.02] transition  duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           <div className="w-full h-full">
             {actvvehicle || vehiclesFreq || maintv ? (
               <Bar
@@ -627,7 +629,7 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-lg hover:scale-[1.05] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-sm hover:shadow-blue-400 hover:scale-[1.02] transition  duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           <div className="w-full h-full">
             {vehicle_maintenance_cost.length > 0 ? (
               <Bar
@@ -711,7 +713,6 @@ export default function Home() {
                   },
                   responsive: true,
                   maintainAspectRatio: false,
-                  cutout: "60%", // Inner cutout for donut effect
                 }}
               />
             ) : (
@@ -724,31 +725,31 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-sm hover:shadow-blue-400 hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           {driver_info.length > 0 ? (
-            <Pie
+            <Doughnut
               data={{
                 labels: driver_info.map((driver) => driver.name),
                 datasets: [
                   {
                     data: driver_info.map((driver) => driver.total_earning),
                     backgroundColor: [
-                      "#FF6384",
-                      "#36A2EB",
-                      "#FFCE56",
-                      "#4BC0C0",
-                      "#9966FF",
-                      "#FF9F40",
-                      "#E7E9ED",
+                      "rgba(255, 99, 132, 0.6)",
+                      "rgba(54, 162, 235, 0.6)",
+                      "rgba(255, 206, 86, 0.6)",
+                      "rgba(75, 192, 192, 0.6)",
+                      "rgba(153, 102, 255, 0.6)",
+                      "rgba(255, 159, 64, 0.6)",
+                      "rgba(231, 233, 237, 0.6)",
                     ],
                     hoverBackgroundColor: [
-                      "#FF6384",
-                      "#36A2EB",
-                      "#FFCE56",
-                      "#4BC0C0",
-                      "#9966FF",
-                      "#FF9F40",
-                      "#E7E9ED",
+                      "rgba(255, 99, 132, 0.9)",
+                      "rgba(54, 162, 235, 0.9)",
+                      "rgba(255, 206, 86, 0.9)",
+                      "rgba(75, 192, 192, 0.9)",
+                      "rgba(153, 102, 255, 0.9)",
+                      "rgba(255, 159, 64, 0.9)",
+                      "rgba(231, 233, 237, 0.9)",
                     ],
                     borderWidth: 2,
                     borderColor: "#FFFFFF",
