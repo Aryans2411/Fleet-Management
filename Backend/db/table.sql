@@ -60,7 +60,8 @@ ALTER COLUMN status SET DEFAULT 'Inactive';
 -- for modifying trips table to add revenue generated in each trip
 ALTER TABLE trips
 ADD COLUMN revenue NUMERIC(15,2);
-
+ALTER TABLE drivers
+ADD COLUMN lastdutydate DATE
 -- maintainance table
 CREATE TABLE MaintenanceRecords (
     recordid SERIAL PRIMARY KEY,

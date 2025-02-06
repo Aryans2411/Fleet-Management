@@ -76,6 +76,19 @@ export default function Trip() {
         Math.sin(dLon / 2) *
         Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const point1 = L.latLng(lat1, lon1);
+    const point2 = L.latLng(lat2, lon2);
+
+    fetch(`https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=5b3ce3597851110001cf62486cc0c7dfd89a427fb7c4696119ea8ad9&start=${lon1},${lat1}&end=${lon2},${lat2}`)
+    .then(response => response.json())
+    .then(data => {
+        console.log(data);
+        const distanceInMeters = data.routes[0].summary.distance;
+        const distanceInKm = (distanceInMeters / 1000).toFixed(2);
+        console.log(`${distanceInKm} km`);
+    })
+    .catch(error => console.error(error));    
+    // console.log(distanceInKm);
     return R * c;
   };
 
@@ -100,7 +113,7 @@ export default function Trip() {
           endlongitude1: parseFloat(newMarkers[1].lng.toFixed(2)),
           distancetravalled1: parseInt(dist.toFixed(2)),
         }));
-        console.log(FormData);
+        // console.log(FormData);
       } else if (newMarkers.length > 2) {
         setdistancetravalled1(null);
         setFormData((prev) => ({
@@ -135,7 +148,7 @@ export default function Trip() {
       }
 
       const data = await response.json();
-      console.log(data);
+      // console.log(data);
       setTripInfo(data);
     } catch (error) {
       console.error("Failed to fetch trips:", error.message);
@@ -168,7 +181,7 @@ export default function Trip() {
     }
 
     try {
-      console.log(formData);
+      // console.log(formData);
       const response = await fetch("http://localhost:4000/api/tripregistered", {
         method: "POST",
         headers: {
@@ -286,7 +299,7 @@ export default function Trip() {
 
     return null;
   };
-  console.log(formData.startlatitude1);
+  // console.log(formData.startlatitude1);
   return (
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black w-screen">
       <Navigation />

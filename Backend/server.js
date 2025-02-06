@@ -453,10 +453,13 @@ app.post("/api/tripregistered", async (req, res) => {
     const query3 = `
       SELECT driverid
       FROM drivers
-      WHERE userid = $1 AND assignedvehicleid IS NULL;
+      WHERE userid = $1
+      AND assignedvehicleid IS NULL
+      AND (lastdutydate IS NULL OR $2 - lastdutydate > 1);
     `;
-    const response3 = await con.query(query3, [userid]);
+    const response3 = await con.query(query3, [userid,starttime]);
     const driverid = response3.rows[0].driverid;
+    console.log(driverid);
     // console.log(driverid);
     // Define the query to insert the trip into the database
     const query = `
@@ -513,6 +516,46 @@ app.post("/api/tripregistered", async (req, res) => {
     res.status(500).json({ error: "Error in registering for trips" });
   }
 });
+//api endpoint for marking the trip completion
+app.post("/api/tripcompletion",async(req,res)=>{
+  try {
+    const {registrationnumber,endtime}= req.body;
+
+    const query1 = `
+      SELECT vehicleid
+      FROM vehicles
+      WHERE registrationnumber = $1
+    `;
+    const response1 = await con.query(query1,[registrationnumber]);
+    const vehicleid = response1.rows[0].vehicleid;
+    const query2 = `
+      UPDATE trips
+      SET
+        tripstatus = 'Completed'
+        WHERE vehicleid = $1 AND tripstatus = 'Scheduled'
+    `;
+    const response2 = await con.query(query2,[vehicleid]);
+    const query3 = `
+      UPDATE vehicles
+      SET 
+        status = 'Inactive'
+        WHERE vehicleid = $1
+    `;
+    const response3 = await con.query(query3,[vehicleid]);
+    const query4 = `
+      UPDATE drivers
+SET 
+    assignedvehicleid = NULL, 
+    lastdutydate = $1
+WHERE assignedvehicleid = $2;
+    `;
+    const response4 = await con.query(query4,[endtime,vehicleid]);
+    res.status(200).json({message:"Updated successfully trip completion!"});
+  } catch (error) {
+    console.error("Error in registering the trip completion:",error);
+    res.status(500).json({error:"Error in trip completion registered"});
+  }
+})
 
 //API endpoint for getting all trips
 app.get("/api/get_all_trips", async (req, res) => {
