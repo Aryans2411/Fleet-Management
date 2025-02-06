@@ -7,8 +7,8 @@ import Footer from "../Components/Footer/Footer";
 import { HoverEffect } from "../Components/ui/card-hover-effect";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
-import my_image from "../Components/assests/Screenshot 2025-02-03 000345.png";
-import mimg from "../Components/assests/localhost_3000_ (1).png";
+import my_image from "../Components/assests/Screenshot 2025-02-07 010515.png";
+import mimg from "../Components/assests/Screenshot 2025-02-07 010515.png";
 const stats = [
   {
     value: 83,

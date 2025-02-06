@@ -3,8 +3,9 @@ import Navigation from "../Components/dashboard/navigation";
 import Footer from "../Components/Footer/Footer";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import Lenis from "lenis";
-import "lenis/dist/lenis.css";
+import { FaRupeeSign } from "react-icons/fa";
 
+import "lenis/dist/lenis.css";
 import {
   MapContainer,
   TileLayer,
@@ -31,6 +32,16 @@ import {
   LineElement,
   RadialLinearScale,
 } from "chart.js";
+import {
+  FaDollarSign,
+  FaCar,
+  FaWrench,
+  FaUser,
+  FaChartLine,
+  FaGasPump,
+  FaCoins,
+  FaLeaf,
+} from "react-icons/fa"; // Import icons from Font Awesome
 
 // Register the components you need, including CategoryScale, BarElement, and LinearScale
 ChartJS.register(
@@ -57,7 +68,7 @@ export default function Home() {
   const [driver_info, setdriver_info] = useState([]);
   const [month_rev, set_month_rev] = useState([]);
   const [month_cost, set_month_cost] = useState([]);
-  const [co2emissionsaved,setCo2emissionsaved] = useState();
+  const [co2emissionsaved, setCo2emissionsaved] = useState([]);
   const [vehicle_maintenance_cost, set_vehicle_maintenance_cost] = useState([]);
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
@@ -83,6 +94,7 @@ export default function Home() {
     get_month_revenue();
     get_month_cost();
     get_monthly_maintenance();
+    getcarbondata();
   }, []);
 
   const customIcon = new L.Icon({
@@ -222,20 +234,25 @@ export default function Home() {
       console.error("Failed to fetch trips:", error.status);
     }
   };
-  const getcarbondata = async () =>{
-    const response = await fetch("http://localhost:4000/api/carbonemissiondata",{
-      method: "GET",
-    });
-    if(!response.ok) {
+  const getcarbondata = async () => {
+    const response = await fetch(
+      "http://localhost:4000/api/carbonemissiondata",
+      {
+        method: "GET",
+      }
+    );
+    if (!response.ok) {
       throw new Error("Error in fetching the carbon emission");
     }
     try {
       const data = await response.json();
+      console.log(data);
+      console.log("here ", co2emissionsaved);
       setCo2emissionsaved(data);
     } catch (error) {
-      console.error("Failed to fetch carbon emission:",error.status);
+      console.error("Failed to fetch carbon emission:", error.status);
     }
-  }
+  };
   const RoutingMachine = ({ from, to, color = "#0000ff" }) => {
     const map = useMap();
     const [routingControl, setRoutingControl] = useState(null);
@@ -358,7 +375,10 @@ export default function Home() {
         {/* Dashboard Cards */}
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Profit</h3>
+            <div className="flex items-center gap-2">
+              <FaCoins className="text-3xl text-green-400" />
+              <h3 className="text-xl font-semibold mb-2">Profit</h3>
+            </div>
             <p className="text-3xl font-bold text-green-400">
               ₹{totalrevenue - cost}
             </p>
@@ -366,13 +386,20 @@ export default function Home() {
         </div>
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Revenue</h3>
+            <div className="flex items-center gap-2">
+              <FaChartLine className="text-3xl text-blue-400" />
+
+              <h3 className="text-xl font-semibold mb-2">Revenue</h3>
+            </div>
             <p className="text-3xl font-bold text-blue-400">₹{totalrevenue}</p>
           </div>
         </div>
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Cost</h3>
+            <div className="flex items-center gap-2">
+              <FaChartLine className="text-3xl text-red-400" />
+              <h3 className="text-xl font-semibold mb-2">Cost</h3>
+            </div>
             <p className="text-3xl font-bold text-red-400">
               ₹{cost === null ? 0 : cost}
             </p>
@@ -380,40 +407,55 @@ export default function Home() {
         </div>
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Total Vehicles</h3>
+            <div className="flex items-center gap-2">
+              <FaCar className="text-3xl text-yellow-400" />
+              <h3 className="text-xl font-semibold mb-2">Total Vehicles</h3>
+            </div>
             <p className="text-3xl font-bold text-yellow-400">{vehiclesFreq}</p>
           </div>
         </div>
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Active Vehicles</h3>
+            <div className="flex items-center gap-2">
+              <FaCar className="text-3xl text-teal-400" />
+              <h3 className="text-xl font-semibold mb-2">Active Vehicles</h3>
+            </div>
             <p className="text-3xl font-bold text-teal-400">{actvvehicle}</p>
           </div>
         </div>
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">
-              Vehicles in Maintenance
-            </h3>
+            <div className="flex items-center gap-2">
+              <FaWrench className="text-3xl text-orange-400" />
+              <h3 className="text-xl font-semibold mb-2">
+                Vehicles in Maintenance
+              </h3>
+            </div>
             <p className="text-3xl font-bold text-orange-400">{maintv}</p>
           </div>
         </div>
         <div className="card">
           <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-            <h3 className="text-xl font-semibold mb-2">Unused Vehicles</h3>
+            <div className="flex items-center gap-2">
+              <FaCar className="text-3xl text-purple-400" />
+              <h3 className="text-xl font-semibold mb-2">Unused Vehicles</h3>
+            </div>
             <p className="text-3xl font-bold text-purple-400">
               {vehiclesFreq - actvvehicle - maintv}
             </p>
           </div>
         </div>
         <div className="p-6 bg-gradient-to-b from-gray-900 to-gray-800 text-white rounded-xl shadow-lg hover:scale-105 transition-transform cursor-pointer">
-          <h3 className="text-xl font-semibold mb-2">Drivers</h3>
+          <div className="flex items-center gap-2">
+            <FaUser className="text-3xl text-blue-400" />
+            <h3 className="text-xl font-semibold mb-2">Drivers</h3>
+          </div>
           <p className="text-3xl font-bold text-blue-400">{driversFreq}</p>
         </div>
       </div>
       <div className="grid grid-cols-2 grid-rows-3 min-h-screen gap-6 p-4">
         {/* Line chart div: Full width on top */}
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-md hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer col-span-2 rounded-2xl p-8 min-h-[250px]">
+        <div className="bg-gradient-to-br from-gray-900 to-gray-800 shadow-2xl transition-all hover:shadow-sm   hover:shadow-blue-400 hover:scale-[1.02] duration-300 ease-in-out cursor-pointer col-span-2 rounded-2xl p-8 min-h-[250px]">
           <div className="w-full h-full min-h-[350px]">
             {month_rev.length > 0 ? (
               <Line
@@ -538,7 +580,7 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800  shadow-sm hover:shadow-blue-400 hover:scale-[1.02] transition  duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 transition-all shadow:2xl hover:shadow-sm hover:shadow-blue-400 hover:scale-[1.02]    duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           <div className="w-full h-full">
             {actvvehicle || vehiclesFreq || maintv ? (
               <Bar
@@ -643,7 +685,7 @@ export default function Home() {
             )}
           </div>
         </div>
-        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-sm hover:shadow-blue-400 hover:scale-[1.02] transition  duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 transition-all shadow-sm hover:shadow-blue-400 hover:scale-[1.02]    duration-300 ease-in-out cursor-pointer rounded-2xl p-8 min-h-[250px]">
           <div className="w-full h-full">
             {vehicle_maintenance_cost.length > 0 ? (
               <Bar
@@ -809,6 +851,115 @@ export default function Home() {
               </p>
             </div>
           )}
+        </div>
+        <div className="bg-gradient-to-b from-gray-900 to-gray-800 shadow-2xl hover:shadow-sm hover:shadow-blue-400 hover:scale-[1.02] transition-transform duration-300 ease-in-out cursor-pointer   rounded-2xl p-8 min-h-[250px]">
+          <div className="w-full h-full min-h-[350px]">
+            {co2emissionsaved.length > 0 ? (
+              <Line
+                data={{
+                  labels: co2emissionsaved.map((rev) => rev.month_name),
+                  datasets: [
+                    {
+                      label: "Carbon emission Saved",
+                      data: co2emissionsaved.map((rev) => rev.carbonemission),
+                      backgroundColor: "rgba(147, 245, 127, 0.2)", // Softer blue fill
+                      borderColor: "#93f57f",
+                      borderWidth: 3,
+                      pointBackgroundColor: "#93f57f",
+                      pointBorderColor: "#fff",
+                      pointHoverBackgroundColor: "#fff",
+                      pointHoverBorderColor: "#36A2EB",
+                      fill: false, // No filling for the Revenue line
+                    },
+                    {
+                      label: "Fuel Saved",
+                      data: co2emissionsaved.map(
+                        (rev) => rev.carbonemission / 2.68
+                      ),
+                      backgroundColor: "rgba(209, 132, 17, 0.2)", // Softer red fill
+                      borderColor: "#d18411",
+                      borderWidth: 3,
+                      pointBackgroundColor: "#d18411",
+                      pointBorderColor: "#fff",
+                      pointHoverBackgroundColor: "#fff",
+                      pointHoverBorderColor: "#FF6384",
+                      fill: true, // Fill the area under the Cost line
+                    },
+                  ],
+                }}
+                options={{
+                  plugins: {
+                    legend: {
+                      position: "top",
+                      labels: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 16,
+                          family: "Inter, sans-serif",
+                          weight: "600",
+                        },
+                        boxWidth: 20,
+                        padding: 15,
+                      },
+                    },
+                    tooltip: {
+                      enabled: true,
+                      backgroundColor: "#2D3748",
+                      titleColor: "#F7FAFC",
+                      bodyColor: "#F7FAFC",
+                      borderColor: "#4A5568",
+                      borderWidth: 1,
+                      cornerRadius: 6,
+                      padding: 12,
+                    },
+                  },
+                  scales: {
+                    x: {
+                      ticks: {
+                        color: "white",
+                        font: {
+                          size: 14,
+                          family: "  sans-serif",
+                        },
+                      },
+                      grid: {
+                        display: true,
+                      },
+                    },
+                    y: {
+                      ticks: {
+                        color: "#F7FAFC",
+                        font: {
+                          size: 14,
+                          family: "sans-serif",
+                        },
+                      },
+                      grid: {
+                        color: "rgba(255, 255, 255, 0.1)",
+                      },
+                    },
+                  },
+                  animation: {
+                    tension: {
+                      duration: 1500,
+                      easing: "easeInOutQuart",
+                      from: 0.3,
+                      to: 0.24,
+                      loop: true,
+                    },
+                  },
+                  responsive: true,
+                  maintainAspectRatio: false,
+                }}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-400 text-lg font-semibold">
+                  No Monthly info available
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -462,11 +462,11 @@ app.post("/api/tripregistered", async (req, res) => {
     const response3 = await con.query(query3, [userid, starttime]);
     const driverid = response3.rows[0].driverid;
     const percentagedistancesaved = Math.random() * (25 - 10) + 10;
-    const distancesaved = distancetravelled*percentagedistancesaved/100;
-    const fuelsaved = distancesaved/mileage;
+    const distancesaved = (distancetravelled * percentagedistancesaved) / 100;
+    const fuelsaved = distancesaved / mileage;
     const emissionfactor = 2.68;
     const co2emission = emissionfactor * fuelsaved;
-    console.log("reached here " , co2emission);
+    console.log("reached here ", co2emission);
     // console.log(driverid);
     // Define the query to insert the trip into the database
     const query = `
@@ -501,7 +501,7 @@ app.post("/api/tripregistered", async (req, res) => {
       endtime,
       distancetravelled,
       revenue,
-      co2emission
+      co2emission,
     ]);
     const query4 = `
       UPDATE drivers
@@ -527,16 +527,17 @@ app.post("/api/tripregistered", async (req, res) => {
   }
 });
 //api endpoint for creating a graph for carbon emission on monthly basis
-app.get("/api/carbonemissiondata",async(req,res)=>{
+app.get("/api/carbonemissiondata", async (req, res) => {
   try {
     const query1 = `
-        WITH month AS (
+         WITH month AS (
         SELECT generate_series(1, 12) AS month_number
         )
         SELECT 
-            m.month_number,
-            COALESCE(SUM(t.savings),0) AS carbonemission
+			TO_CHAR(TO_DATE(m.month_number::TEXT, 'MM'), 'FMMonth') AS month_name,
+			COALESCE(SUM(t.savings),0) AS carbonemission
         FROM month m
+          
         LEFT JOIN Trips t ON EXTRACT(MONTH FROM t.starttime) = m.month_number
         GROUP BY m.month_number
         ORDER BY m.month_number;
@@ -545,10 +546,12 @@ app.get("/api/carbonemissiondata",async(req,res)=>{
     console.log(response.rows[0]);
     res.json(response.rows);
   } catch (error) {
-    console.error({message:"Error in getting all the carbon emission data"});
-    res.status(400).json({error:"Error in getting all the carbon emission data"});
+    console.error({ message: "Error in getting all the carbon emission data" });
+    res
+      .status(400)
+      .json({ error: "Error in getting all the carbon emission data" });
   }
-})
+});
 //api endpoint for marking the trip completion
 app.post("/api/tripcompletion", async (req, res) => {
   try {
