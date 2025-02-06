@@ -419,9 +419,9 @@ app.post("/api/tripregistered", async (req, res) => {
       3. Select the vehicle with the minimum distance.
       4. Assign the vehicle ID to the `bestVehicleID` variable.
     */
-
+    let mileage;
     const inactiveVehiclesQuery = `
-      SELECT vehicleid, latitude, longitude
+      SELECT vehicleid, latitude, longitude,idealmileage
       FROM vehicles
       WHERE status = 'Inactive' AND ($1<nextduedate OR nextduedate is NULL);
     `;
@@ -444,6 +444,7 @@ app.post("/api/tripregistered", async (req, res) => {
         if (distance < minDistance) {
           minDistance = distance;
           bestVehicleID = vehicle.vehicleid;
+          mileage = vehicle.idealmileage;
         }
       });
     } else {
@@ -460,7 +461,12 @@ app.post("/api/tripregistered", async (req, res) => {
     `;
     const response3 = await con.query(query3, [userid, starttime]);
     const driverid = response3.rows[0].driverid;
-    console.log(driverid);
+    const percentagedistancesaved = Math.random() * (25 - 10) + 10;
+    const distancesaved = distancetravelled*percentagedistancesaved/100;
+    const fuelsaved = distancesaved/mileage;
+    const emissionfactor = 2.68;
+    const co2emission = emissionfactor * fuelsaved;
+    console.log("reached here " , co2emission);
     // console.log(driverid);
     // Define the query to insert the trip into the database
     const query = `
@@ -475,8 +481,9 @@ app.post("/api/tripregistered", async (req, res) => {
         starttime,
         endtime,
         distancetravelled,
-        revenue
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11)
+        revenue,
+        savings
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8,$9,$10,$11,$12)
         RETURNING tripid;
         `;
 
@@ -494,6 +501,7 @@ app.post("/api/tripregistered", async (req, res) => {
       endtime,
       distancetravelled,
       revenue,
+      co2emission
     ]);
     const query4 = `
       UPDATE drivers
@@ -506,6 +514,7 @@ app.post("/api/tripregistered", async (req, res) => {
       SET status = $1
       WHERE vehicleid = $2
     `;
+
     const response5 = await con.query(query5, ["Active", bestVehicleID]);
 
     // console.log(response4.rows);
@@ -517,6 +526,29 @@ app.post("/api/tripregistered", async (req, res) => {
     res.status(500).json({ error: "Error in registering for trips" });
   }
 });
+//api endpoint for creating a graph for carbon emission on monthly basis
+app.get("/api/carbonemissiondata",async(req,res)=>{
+  try {
+    const query1 = `
+        WITH month AS (
+        SELECT generate_series(1, 12) AS month_number
+        )
+        SELECT 
+            m.month_number,
+            COALESCE(SUM(t.savings),0) AS carbonemission
+        FROM month m
+        LEFT JOIN Trips t ON EXTRACT(MONTH FROM t.starttime) = m.month_number
+        GROUP BY m.month_number
+        ORDER BY m.month_number;
+    `;
+    const response = await con.query(query1);
+    console.log(response.rows[0]);
+    res.json(response.rows);
+  } catch (error) {
+    console.error({message:"Error in getting all the carbon emission data"});
+    res.status(400).json({error:"Error in getting all the carbon emission data"});
+  }
+})
 //api endpoint for marking the trip completion
 app.post("/api/tripcompletion", async (req, res) => {
   try {

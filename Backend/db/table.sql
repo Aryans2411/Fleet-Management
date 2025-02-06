@@ -57,6 +57,8 @@ CREATE TABLE Trips (
 --  for modifying vehicles table to inactive the default status
 ALTER TABLE Vehicles
 ALTER COLUMN status SET DEFAULT 'Inactive';
+ALTER TABLE trips
+ADD COLUMN savings NUMERIC(10,2);
 -- for modifying trips table to add revenue generated in each trip
 ALTER TABLE trips
 ADD COLUMN revenue NUMERIC(15,2);

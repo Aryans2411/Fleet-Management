@@ -57,6 +57,7 @@ export default function Home() {
   const [driver_info, setdriver_info] = useState([]);
   const [month_rev, set_month_rev] = useState([]);
   const [month_cost, set_month_cost] = useState([]);
+  const [co2emissionsaved,setCo2emissionsaved] = useState();
   const [vehicle_maintenance_cost, set_vehicle_maintenance_cost] = useState([]);
   const [dashboardData, setDashboardData] = useState({
     profit: 0,
@@ -221,7 +222,20 @@ export default function Home() {
       console.error("Failed to fetch trips:", error.status);
     }
   };
-
+  const getcarbondata = async () =>{
+    const response = await fetch("http://localhost:4000/api/carbonemissiondata",{
+      method: "GET",
+    });
+    if(!response.ok) {
+      throw new Error("Error in fetching the carbon emission");
+    }
+    try {
+      const data = await response.json();
+      setCo2emissionsaved(data);
+    } catch (error) {
+      console.error("Failed to fetch carbon emission:",error.status);
+    }
+  }
   const RoutingMachine = ({ from, to, color = "#0000ff" }) => {
     const map = useMap();
     const [routingControl, setRoutingControl] = useState(null);
