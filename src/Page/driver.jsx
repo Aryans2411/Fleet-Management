@@ -116,7 +116,7 @@ export default function Driver() {
     <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-black w-screen">
       <Navigation />
       <div className="mx-auto max-w-7xl">
-        <div className="bg-gray-900    border border-gray-700 shadow-2xl hover:shadow-blue-500 transition-shadow duration-300 mx-auto py-10 mt-4 mb-2 rounded-lg">
+        <div className="bg-gray-900    border border-gray-700 shadow-2xl   hover:shadow-blue-500 transition-shadow duration-300 mx-auto py-10 mt-4 mb-2 rounded-lg">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto ">
@@ -281,6 +281,12 @@ export default function Driver() {
                         >
                           Status
                         </th>
+                        <th
+                          scope="col"
+                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
+                        >
+                          Last Duty Date
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -300,9 +306,18 @@ export default function Driver() {
                               {driver.earningperkm}
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {driver.assignedvehicleid > 0
+                              {new Date() - driver.lastdutydate <= 2
+                                ? "At Rest"
+                                : driver.assignedvehicleid > 0
                                 ? "Engaged"
                                 : "Free"}
+                            </td>
+                            <td className="whitespace-normal px-3 py-4 text-sm text-gray-300">
+                              {driver.lastdutydate != null
+                                ? new Date(driver.lastdutydate)
+                                    .toISOString()
+                                    .split("T")[0]
+                                : null}
                             </td>
                           </tr>
                         ))

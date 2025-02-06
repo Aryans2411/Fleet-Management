@@ -79,17 +79,48 @@ export default function Trip() {
     const point1 = L.latLng(lat1, lon1);
     const point2 = L.latLng(lat2, lon2);
 
-    fetch(`https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=5b3ce3597851110001cf62486cc0c7dfd89a427fb7c4696119ea8ad9&start=${lon1},${lat1}&end=${lon2},${lat2}`)
-    .then(response => response.json())
-    .then(data => {
+    fetch(
+      `https://api.openrouteservice.org/v2/isochrones/driving-car?api_key=5b3ce3597851110001cf62486cc0c7dfd89a427fb7c4696119ea8ad9&start=${lon1},${lat1}&end=${lon2},${lat2}`
+    )
+      .then((response) => response.json())
+      .then((data) => {
         console.log(data);
         const distanceInMeters = data.routes[0].summary.distance;
         const distanceInKm = (distanceInMeters / 1000).toFixed(2);
         console.log(`${distanceInKm} km`);
-    })
-    .catch(error => console.error(error));    
+      })
+      .catch((error) => console.error(error));
     // console.log(distanceInKm);
     return R * c;
+  };
+
+  const handleComplete = async (trip) => {
+    const registrationnumber = trip.registrationnumber;
+    const endtime = trip.endtime;
+    setSuccess("");
+
+    try {
+      const response = await fetch("http://localhost:4000/api/tripcompletion", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ registrationnumber, endtime }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Error in marking trip");
+      }
+
+      const result = await response.json();
+      console.log("status here", result);
+      setSuccess("Trip Marked Successfully!");
+      setTimeout(() => setSuccess(null), 3000);
+      console.log(result);
+    } catch (error) {
+      setErr("Failed to mark the trip");
+    }
   };
 
   const handleMapClick = async (lat, lng) => {
@@ -478,30 +509,7 @@ export default function Trip() {
                         >
                           Vehicle
                         </th>
-                        <th
-                          scope="col"
-                          className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-white sm:pl-0"
-                        >
-                          Start Latitude
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                        >
-                          Start Longitude
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                        >
-                          End Latitude
-                        </th>
-                        <th
-                          scope="col"
-                          className="px-3 py-3.5 text-left text-sm font-semibold text-white"
-                        >
-                          End Longitude
-                        </th>
+
                         <th
                           scope="col"
                           className="px-3 py-3.5 text-left text-sm font-semibold text-white"
@@ -518,7 +526,7 @@ export default function Trip() {
                           scope="col"
                           className="px-3 py-3.5 text-left text-sm font-semibold text-white"
                         >
-                          distanceTravalled
+                          Trip Distance
                         </th>
                         <th
                           scope="col"
@@ -532,6 +540,9 @@ export default function Trip() {
                         >
                           Revenue
                         </th>
+                        <th className="px-3 py-3.5 text-left text-sm font-semibold text-white">
+                          Is Completed?
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-800">
@@ -544,18 +555,7 @@ export default function Trip() {
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {trip.registrationnumber}
                             </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {trip.startlatitude}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {trip.startlongitude}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {trip.endlongitude}
-                            </td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {trip.endlatitude}
-                            </td>
+
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {trip.starttime}
                             </td>
@@ -570,6 +570,14 @@ export default function Trip() {
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               ₹{trip.revenue != "0" ? trip.revenue : "0"}
+                            </td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              <button
+                                className="px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600 transition  hover:-translate-x-1"
+                                onClick={() => handleComplete(trip)}
+                              >
+                                Mark Completed
+                              </button>
                             </td>
                           </tr>
                         ))
