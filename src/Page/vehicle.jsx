@@ -589,7 +589,9 @@ export default function Vehicle() {
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
                               {vehicle.nextduedate === null
                                 ? null
-                                : vehicle.nextduedate}
+                                : new Date(vehicle.nextduedate)
+                                    .toISOString()
+                                    .split("T")[0]}
                             </td>
                           </tr>
                         ))

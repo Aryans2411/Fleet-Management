@@ -419,12 +419,13 @@ app.post("/api/tripregistered", async (req, res) => {
       3. Select the vehicle with the minimum distance.
       4. Assign the vehicle ID to the `bestVehicleID` variable.
     */
+
     const inactiveVehiclesQuery = `
       SELECT vehicleid, latitude, longitude
       FROM vehicles
-      WHERE status = 'Inactive';
+      WHERE status = 'Inactive' AND ($1<nextduedate OR nextduedate is NULL);
     `;
-    const vehicles = await con.query(inactiveVehiclesQuery);
+    const vehicles = await con.query(inactiveVehiclesQuery, [endtime]);
 
     if (vehicles.rows.length > 0) {
       let minDistance = Number.MAX_SAFE_INTEGER;
@@ -446,7 +447,7 @@ app.post("/api/tripregistered", async (req, res) => {
         }
       });
     } else {
-      return res.status(404).json({ error: "No inactive vehicles available." });
+      return res.status(404).json({ error: "No free  vehicles available." });
     }
     // console.log(bestVehicleID);
     // selecting driver_id
@@ -457,7 +458,7 @@ app.post("/api/tripregistered", async (req, res) => {
       AND assignedvehicleid IS NULL
       AND (lastdutydate IS NULL OR $2 - lastdutydate > 1);
     `;
-    const response3 = await con.query(query3, [userid,starttime]);
+    const response3 = await con.query(query3, [userid, starttime]);
     const driverid = response3.rows[0].driverid;
     console.log(driverid);
     // console.log(driverid);
@@ -517,16 +518,16 @@ app.post("/api/tripregistered", async (req, res) => {
   }
 });
 //api endpoint for marking the trip completion
-app.post("/api/tripcompletion",async(req,res)=>{
+app.post("/api/tripcompletion", async (req, res) => {
   try {
-    const {registrationnumber,endtime}= req.body;
+    const { registrationnumber, endtime } = req.body;
 
     const query1 = `
       SELECT vehicleid
       FROM vehicles
       WHERE registrationnumber = $1
     `;
-    const response1 = await con.query(query1,[registrationnumber]);
+    const response1 = await con.query(query1, [registrationnumber]);
     const vehicleid = response1.rows[0].vehicleid;
     const query2 = `
       UPDATE trips
@@ -534,14 +535,14 @@ app.post("/api/tripcompletion",async(req,res)=>{
         tripstatus = 'Completed'
         WHERE vehicleid = $1 AND tripstatus = 'Scheduled'
     `;
-    const response2 = await con.query(query2,[vehicleid]);
+    const response2 = await con.query(query2, [vehicleid]);
     const query3 = `
       UPDATE vehicles
       SET 
         status = 'Inactive'
         WHERE vehicleid = $1
     `;
-    const response3 = await con.query(query3,[vehicleid]);
+    const response3 = await con.query(query3, [vehicleid]);
     const query4 = `
       UPDATE drivers
 SET 
@@ -549,13 +550,13 @@ SET
     lastdutydate = $1
 WHERE assignedvehicleid = $2;
     `;
-    const response4 = await con.query(query4,[endtime,vehicleid]);
-    res.status(200).json({message:"Updated successfully trip completion!"});
+    const response4 = await con.query(query4, [endtime, vehicleid]);
+    res.status(200).json({ message: "Updated successfully trip completion!" });
   } catch (error) {
-    console.error("Error in registering the trip completion:",error);
-    res.status(500).json({error:"Error in trip completion registered"});
+    console.error("Error in registering the trip completion:", error);
+    res.status(500).json({ error: "Error in trip completion registered" });
   }
-})
+});
 
 //API endpoint for getting all trips
 app.get("/api/get_all_trips", async (req, res) => {
