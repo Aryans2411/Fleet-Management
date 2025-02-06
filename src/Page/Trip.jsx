@@ -557,10 +557,18 @@ export default function Trip() {
                             </td>
 
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {trip.starttime}
+                              {
+                                new Date(trip.starttime)
+                                  .toISOString()
+                                  .split("T")[0]
+                              }
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
-                              {trip.endtime}
+                              {
+                                new Date(trip.endtime)
+                                  .toISOString()
+                                  .split("T")[0]
+                              }
                             </td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300 text-center">
                               {trip.distancetravelled}
