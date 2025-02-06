@@ -623,7 +623,7 @@ app.get("/api/get_totalcost", async (req, res) => {
       ? 0
       : parseInt(result.rows[0].sum);
 
-    console.log("this is sum ", sum);
+    // console.log("this is sum ", sum);
     //this query2 is for fuel consumption cost
     const query2 = `
     SELECT 
@@ -642,7 +642,7 @@ app.get("/api/get_totalcost", async (req, res) => {
       `;
     const result2 = await con.query(query2, [petrolprice, dieselprice, userid]);
     const netamount1 = parseInt(result2.rows[0].net_amount);
-    console.log("netamount1", netamount1);
+    // console.log("netamount1", netamount1);
     const query3 = `
       SELECT 
       SUM(t.distancetravelled * d.earningperkm) AS net_earning
